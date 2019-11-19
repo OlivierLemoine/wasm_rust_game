@@ -1,9 +1,11 @@
 mod context;
+mod helper;
 mod render;
 mod sprite;
 mod transform;
 mod vector;
 
+use helper::{body, request_animation_frame};
 use js_sys::*;
 use specs::prelude::*;
 use std::cell::RefCell;
@@ -11,13 +13,55 @@ use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
-fn window() -> Result<web_sys::Window, JsValue> {
-    web_sys::window().ok_or(JsValue::from(Error::new(&"No window")))
+#[derive(Default)]
+struct KeyPress {
+    w: bool,
+    a: bool,
+    s: bool,
+    d: bool,
 }
 
-fn request_animation_frame(f: &Closure<dyn FnMut()>) -> Result<(), JsValue> {
-    window()?.request_animation_frame(f.as_ref().unchecked_ref())?;
-    Ok(())
+impl KeyPress {
+    pub fn update_from_str(&mut self, val: &str, new_val: bool) {
+        match val {
+            "w" => self.w = new_val,
+            "a" => self.a = new_val,
+            "s" => self.s = new_val,
+            "d" => self.d = new_val,
+            _ => {}
+        }
+    }
+}
+
+struct TestMove;
+
+use specs::prelude::*;
+
+impl<'a> System<'a> for TestMove {
+    type SystemData = (
+        Read<'a, KeyPress>,
+        ReadStorage<'a, transform::Speed>,
+        WriteStorage<'a, transform::Position>,
+    );
+
+    fn run(&mut self, (kp, speeds, mut transforms): Self::SystemData) {
+        for (s, t) in (&speeds, &mut transforms).join() {
+            let t: &mut transform::Position = t;
+            let s: &transform::Speed = s;
+            if kp.w {
+                t.translate(vector::Vec2::from((0.0, -s.get())));
+            }
+            if kp.s {
+                t.translate(vector::Vec2::from((0.0, s.get())));
+            }
+            if kp.d {
+                t.translate(vector::Vec2::from((s.get(), 0.0)));
+            }
+            if kp.a {
+                t.translate(vector::Vec2::from((-s.get(), 0.0)));
+            }
+        }
+    }
 }
 
 #[wasm_bindgen]
@@ -27,11 +71,40 @@ pub fn start() -> Result<(), JsValue> {
 
     let closure = Rc::new(RefCell::new(None));
     let imediate_closure = closure.clone();
+    let mut renderer = render::SysRender;
+    let mut mover = TestMove;
+    specs::shred::RunNow::setup(&mut mover, &mut world);
+    specs::shred::RunNow::setup(&mut renderer, &mut world);
+
+    let world = Rc::new(RefCell::new(world));
+
+    {
+        let world_ev_kd = world.clone();
+        let closure = Closure::wrap(Box::new(move |ev: web_sys::KeyboardEvent| {
+            let mut w: std::cell::RefMut<World> = world_ev_kd.borrow_mut();
+            let kp: &mut KeyPress = w.get_mut().unwrap();
+            kp.update_from_str(ev.key().as_str(), true);
+        }) as Box<dyn FnMut(_)>);
+
+        body()?.add_event_listener_with_callback("keydown", closure.as_ref().unchecked_ref())?;
+        closure.forget();
+    }
+    {
+        let world_ev_ku = world.clone();
+        let closure = Closure::wrap(Box::new(move |ev: web_sys::KeyboardEvent| {
+            let mut w: std::cell::RefMut<World> = world_ev_ku.borrow_mut();
+            let kp: &mut KeyPress = w.get_mut().unwrap();
+            kp.update_from_str(ev.key().as_str(), false);
+        }) as Box<dyn FnMut(_)>);
+
+        body()?.add_event_listener_with_callback("keyup", closure.as_ref().unchecked_ref())?;
+        closure.forget();
+    }
 
     *imediate_closure.borrow_mut() = Some(Closure::wrap(Box::new(move || {
-        let mut renderer = render::SysRender;
-        specs::shred::RunNow::setup(&mut renderer, &mut world);
-        renderer.run_now(&mut world);
+        let mut w = world.borrow_mut();
+        mover.run_now(&mut w);
+        renderer.run_now(&mut w);
 
         request_animation_frame(closure.borrow().as_ref().unwrap()).unwrap();
     }) as Box<dyn FnMut()>));
@@ -47,12 +120,15 @@ pub fn start() -> Result<(), JsValue> {
 }
 
 fn init(world: &mut World) {
-    world.register::<transform::Transform>();
+    world.insert(KeyPress::default());
+    world.register::<transform::Position>();
+    world.register::<transform::Speed>();
     world.register::<sprite::Sprite>();
 
     world
         .create_entity()
-        .with(transform::Transform::default())
+        .with(transform::Position::default())
+        .with(transform::Speed::new(2.0))
         .with(sprite::Sprite::from(vec![sprite::Image::rec(
             sprite::Color::red(),
             100,

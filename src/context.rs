@@ -33,6 +33,8 @@ impl Context {
     }
 
     pub fn draw(&self, img: &Image, pos_x: u32, pos_y: u32) -> Result<(), JsValue> {
+        self.ctx
+            .clear_rect(0.0, 0.0, self.width as f64, self.height as f64);
         let data = ImageData::new_with_u8_clamped_array_and_sh(
             Clamped(&mut img.data().clone()),
             img.width(),
