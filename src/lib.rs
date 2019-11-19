@@ -1,8 +1,6 @@
-mod context;
 mod engine;
 mod helper;
 mod math;
-mod sprite;
 
 use helper::{body, request_animation_frame};
 use js_sys::*;
@@ -70,10 +68,10 @@ pub fn start() -> Result<(), JsValue> {
 
     let closure = Rc::new(RefCell::new(None));
     let imediate_closure = closure.clone();
-    // let mut renderer = render::SysRender;
     // let mut mover = TestMove;
     // specs::shred::RunNow::setup(&mut mover, &mut world);
-    // specs::shred::RunNow::setup(&mut renderer, &mut world);
+    let mut renderer = engine::render::render::SysRender;
+    specs::shred::RunNow::setup(&mut renderer, &mut world);
 
     let world = Rc::new(RefCell::new(world));
 
@@ -103,7 +101,7 @@ pub fn start() -> Result<(), JsValue> {
     *imediate_closure.borrow_mut() = Some(Closure::wrap(Box::new(move || {
         let mut w = world.borrow_mut();
         // mover.run_now(&mut w);
-        // renderer.run_now(&mut w);
+        renderer.run_now(&mut w);
 
         request_animation_frame(closure.borrow().as_ref().unwrap()).unwrap();
     }) as Box<dyn FnMut()>));
@@ -120,18 +118,17 @@ pub fn start() -> Result<(), JsValue> {
 
 fn init(world: &mut World) {
     world.insert(KeyPress::default());
-    // world.register::<transform::Position>();
-    // world.register::<transform::Speed>();
-    world.register::<sprite::Sprite>();
+
+    engine::register_components(world);
 
     world
         .create_entity()
         // .with(transform::Position::default())
         // .with(transform::Speed::new(5.0))
-        .with(sprite::Sprite::from(vec![sprite::Image::rec(
-            sprite::Color::red(),
-            100,
-            100,
-        )]))
+        // .with(sprite::Sprite::from(vec![sprite::Image::rec(
+        //     sprite::Color::red(),
+        //     100,
+        //     100,
+        // )]))
         .build();
 }

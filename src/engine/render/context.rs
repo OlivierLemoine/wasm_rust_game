@@ -1,4 +1,4 @@
-use crate::sprite::Image;
+use crate::engine::render::sprite::Image;
 use std::f64;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::{Clamped, JsCast};

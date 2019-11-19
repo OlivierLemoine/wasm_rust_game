@@ -1,6 +1,6 @@
-use super::transform::Transform;
-use crate::context::Context;
-use crate::sprite::Sprite;
+use super::super::transform::Transform;
+use super::context::Context;
+use super::sprite::Sprite;
 use lazy_static::*;
 use specs::prelude::*;
 
