@@ -1,9 +1,8 @@
 mod context;
+mod engine;
 mod helper;
-mod render;
+mod math;
 mod sprite;
-mod transform;
-mod vector;
 
 use helper::{body, request_animation_frame};
 use js_sys::*;
@@ -33,36 +32,36 @@ impl KeyPress {
     }
 }
 
-struct TestMove;
+// struct TestMove;
 
-use specs::prelude::*;
+// use specs::prelude::*;
 
-impl<'a> System<'a> for TestMove {
-    type SystemData = (
-        Read<'a, KeyPress>,
-        ReadStorage<'a, transform::Speed>,
-        WriteStorage<'a, transform::Position>,
-    );
+// impl<'a> System<'a> for TestMove {
+//     type SystemData = (
+//         Read<'a, KeyPress>,
+//         ReadStorage<'a, transform::Speed>,
+//         WriteStorage<'a, transform::Position>,
+//     );
 
-    fn run(&mut self, (kp, speeds, mut transforms): Self::SystemData) {
-        for (s, t) in (&speeds, &mut transforms).join() {
-            let t: &mut transform::Position = t;
-            let s: &transform::Speed = s;
-            if kp.w {
-                t.translate(vector::Vec2::from((0.0, -s.get())));
-            }
-            if kp.s {
-                t.translate(vector::Vec2::from((0.0, s.get())));
-            }
-            if kp.d {
-                t.translate(vector::Vec2::from((s.get(), 0.0)));
-            }
-            if kp.a {
-                t.translate(vector::Vec2::from((-s.get(), 0.0)));
-            }
-        }
-    }
-}
+//     fn run(&mut self, (kp, speeds, mut transforms): Self::SystemData) {
+//         for (s, t) in (&speeds, &mut transforms).join() {
+//             let t: &mut transform::Position = t;
+//             let s: &transform::Speed = s;
+//             if kp.w {
+//                 t.translate(vector::Vec2::from((0.0, -s.get())));
+//             }
+//             if kp.s {
+//                 t.translate(vector::Vec2::from((0.0, s.get())));
+//             }
+//             if kp.d {
+//                 t.translate(vector::Vec2::from((s.get(), 0.0)));
+//             }
+//             if kp.a {
+//                 t.translate(vector::Vec2::from((-s.get(), 0.0)));
+//             }
+//         }
+//     }
+// }
 
 #[wasm_bindgen]
 pub fn start() -> Result<(), JsValue> {
@@ -71,10 +70,10 @@ pub fn start() -> Result<(), JsValue> {
 
     let closure = Rc::new(RefCell::new(None));
     let imediate_closure = closure.clone();
-    let mut renderer = render::SysRender;
-    let mut mover = TestMove;
-    specs::shred::RunNow::setup(&mut mover, &mut world);
-    specs::shred::RunNow::setup(&mut renderer, &mut world);
+    // let mut renderer = render::SysRender;
+    // let mut mover = TestMove;
+    // specs::shred::RunNow::setup(&mut mover, &mut world);
+    // specs::shred::RunNow::setup(&mut renderer, &mut world);
 
     let world = Rc::new(RefCell::new(world));
 
@@ -103,8 +102,8 @@ pub fn start() -> Result<(), JsValue> {
 
     *imediate_closure.borrow_mut() = Some(Closure::wrap(Box::new(move || {
         let mut w = world.borrow_mut();
-        mover.run_now(&mut w);
-        renderer.run_now(&mut w);
+        // mover.run_now(&mut w);
+        // renderer.run_now(&mut w);
 
         request_animation_frame(closure.borrow().as_ref().unwrap()).unwrap();
     }) as Box<dyn FnMut()>));
@@ -121,14 +120,14 @@ pub fn start() -> Result<(), JsValue> {
 
 fn init(world: &mut World) {
     world.insert(KeyPress::default());
-    world.register::<transform::Position>();
-    world.register::<transform::Speed>();
+    // world.register::<transform::Position>();
+    // world.register::<transform::Speed>();
     world.register::<sprite::Sprite>();
 
     world
         .create_entity()
-        .with(transform::Position::default())
-        .with(transform::Speed::new(2.0))
+        // .with(transform::Position::default())
+        // .with(transform::Speed::new(5.0))
         .with(sprite::Sprite::from(vec![sprite::Image::rec(
             sprite::Color::red(),
             100,

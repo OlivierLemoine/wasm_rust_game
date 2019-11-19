@@ -7,7 +7,12 @@
         <title>Document</title>
     </head>
     <body style="background-color: rgb(31, 31, 31);">
-        <canvas id="game"></canvas>
+        <canvas
+            id="game"
+            width="1000px"
+            height="500px"
+            style="background-color: rgb(40, 40, 40);"
+        ></canvas>
         <script type="module">
             import init, { start } from './pkg/wasm.js';
             (async () => {

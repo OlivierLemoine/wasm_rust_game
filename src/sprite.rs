@@ -9,10 +9,6 @@ impl Sprite {
     pub fn image(&self) -> &Image {
         &self.images[self.index]
     }
-
-    pub fn update_index(&mut self, index: usize) {
-        self.index = index;
-    }
 }
 
 impl From<Vec<Image>> for Sprite {
@@ -32,11 +28,11 @@ impl Color {
         Color(255, 0, 0, 255)
     }
 
-    pub fn green() -> Self {
+    pub fn _green() -> Self {
         Color(0, 255, 0, 255)
     }
 
-    pub fn blue() -> Self {
+    pub fn _blue() -> Self {
         Color(0, 0, 255, 255)
     }
 }

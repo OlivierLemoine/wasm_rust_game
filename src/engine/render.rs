@@ -1,6 +1,6 @@
+use super::transform::Transform;
 use crate::context::Context;
 use crate::sprite::Sprite;
-use crate::transform::Position;
 use lazy_static::*;
 use specs::prelude::*;
 
@@ -11,16 +11,20 @@ lazy_static! {
 pub struct SysRender;
 
 impl<'a> System<'a> for SysRender {
-    type SystemData = (ReadStorage<'a, Position>, ReadStorage<'a, Sprite>);
+    type SystemData = (ReadStorage<'a, Transform>, ReadStorage<'a, Sprite>);
 
     fn run(&mut self, (transforms, sprites): Self::SystemData) {
-        for (p, s) in (&transforms, &sprites).join() {
-            let p: &Position = p;
+        for (t, s) in (&transforms, &sprites).join() {
+            let t: &Transform = t;
             let s: &Sprite = s;
             let ctx: &Context = &CTX;
 
-            ctx.draw(s.image(), *p.get().x() as u32, *p.get().y() as u32)
-                .unwrap();
+            ctx.draw(
+                s.image(),
+                *t.position().x() as u32,
+                *t.position().y() as u32,
+            )
+            .unwrap();
         }
     }
 }
