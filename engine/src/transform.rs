@@ -1,4 +1,4 @@
-use crate::math::vector::Vec2;
+use math::Vec2;
 use specs::prelude::*;
 
 #[derive(Default)]

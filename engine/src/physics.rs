@@ -1,10 +1,35 @@
 use super::transform::Transform;
-use crate::math::vector::Vec2;
 use lazy_static::*;
+use math::Vec2;
 use specs::prelude::*;
 
 lazy_static! {
     static ref GRAVITY: Vec2<f64> = Vec2::from((0.0, -9.90));
+}
+
+pub struct RigidBodyBuilder {
+    mass: Option<f64>,
+}
+
+impl RigidBodyBuilder {
+    pub fn new() -> Self {
+        RigidBodyBuilder { mass: None }
+    }
+
+    pub fn set_mass(mut self, mass: f64) -> Self {
+        self.mass = Some(mass);
+        self
+    }
+
+    pub fn build(self) -> RigidBody {
+        let mut res = RigidBody::default();
+        res.mass = match self.mass {
+            Some(x) => x,
+            None => 0.0,
+        };
+
+        res
+    }
 }
 
 #[derive(Default)]

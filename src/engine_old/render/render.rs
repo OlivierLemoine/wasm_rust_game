@@ -1,11 +1,11 @@
 use super::super::transform::Transform;
 use super::context::Context;
+use super::image::Image;
 use super::sprite::Sprite;
-use lazy_static::*;
 use specs::prelude::*;
 
-lazy_static! {
-    static ref CTX: Context = { Context::from_id("game").unwrap() };
+pub trait Drawer {
+    fn draw();
 }
 
 pub struct SysRender;
