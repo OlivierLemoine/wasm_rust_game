@@ -13,6 +13,9 @@ lazy_static = "1.4"
 [dependencies.math]
 path = "../math"
 
+[dependencies.log]
+path = "../log"
+
 [dependencies.web-sys]
 version = "0.3"
 features = [

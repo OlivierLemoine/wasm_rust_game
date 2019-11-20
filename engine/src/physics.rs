@@ -1,5 +1,6 @@
 use super::transform::Transform;
 use lazy_static::*;
+use log::*;
 use math::Vec2;
 use specs::prelude::*;
 
@@ -52,6 +53,7 @@ impl<'a> System<'a> for PhysicsSystem {
     type SystemData = (WriteStorage<'a, Transform>, WriteStorage<'a, RigidBody>);
 
     fn run(&mut self, (mut transforms, mut rigid_bodies): Self::SystemData) {
+        // console_log!("test");
         for (t, r) in (&mut transforms, &mut rigid_bodies).join() {
             r.acceleration += r.force / r.mass + *GRAVITY;
             r.velocity += r.acceleration;
