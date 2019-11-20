@@ -17,6 +17,10 @@ impl Transform {
     pub fn position_mut(&mut self) -> &mut Vec2<f64> {
         &mut self.position
     }
+
+    pub fn translate(&mut self, other: Vec2<f64>) {
+        self.position += other;
+    }
 }
 
 impl Component for Transform {
