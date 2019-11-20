@@ -1,3 +1,4 @@
+use super::collider::Collider;
 use super::transform::Transform;
 use lazy_static::*;
 use math::Vec2;
@@ -49,10 +50,14 @@ impl Component for RigidBody {
 pub struct PhysicsSystem;
 
 impl<'a> System<'a> for PhysicsSystem {
-    type SystemData = (WriteStorage<'a, Transform>, WriteStorage<'a, RigidBody>);
+    type SystemData = (
+        WriteStorage<'a, Transform>,
+        WriteStorage<'a, RigidBody>,
+        ReadStorage<'a, Collider>,
+    );
 
-    fn run(&mut self, (mut transforms, mut rigid_bodies): Self::SystemData) {
-        for (t, r) in (&mut transforms, &mut rigid_bodies).join() {
+    fn run(&mut self, (mut transforms, mut rigid_bodies, colliders): Self::SystemData) {
+        for (t, r, c) in (&mut transforms, &mut rigid_bodies, &colliders).join() {
             r.acceleration += r.force / r.mass + *GRAVITY;
             r.velocity += r.acceleration;
             *t.position_mut() += r.velocity;

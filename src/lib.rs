@@ -48,26 +48,24 @@ impl<'a> System<'a> for TestMove {
 
 #[wasm_bindgen]
 pub fn start() -> Result<(), JsValue> {
-    let mut world = engine::new_world();
-    world.register::<Player>();
-    init(&mut world);
+    let mut game = engine::Game::new();
+    game.world.register::<Player>();
+    init(&mut game.world);
 
     let closure = Rc::new(RefCell::new(None));
     let imediate_closure = closure.clone();
     let mut mover = TestMove;
-    engine::specs::shred::RunNow::setup(&mut mover, &mut world);
-    let mut physics = PhysicsSystem;
-    engine::specs::shred::RunNow::setup(&mut physics, &mut world);
+    engine::specs::shred::RunNow::setup(&mut mover, &mut game.world);
     let mut renderer = draw::SysRender;
-    engine::specs::shred::RunNow::setup(&mut renderer, &mut world);
+    engine::specs::shred::RunNow::setup(&mut renderer, &mut game.world);
 
-    let world = Rc::new(RefCell::new(world));
+    let game = Rc::new(RefCell::new(game));
 
     {
-        let world_ev_kd = world.clone();
+        let game_ev_kd = game.clone();
         let closure = Closure::wrap(Box::new(move |ev: web_sys::KeyboardEvent| {
-            let mut w: std::cell::RefMut<World> = world_ev_kd.borrow_mut();
-            let kp: &mut engine::KeyPress = w.get_mut().unwrap();
+            let mut w: std::cell::RefMut<engine::Game> = game_ev_kd.borrow_mut();
+            let kp: &mut engine::KeyPress = w.world.get_mut().unwrap();
             kp.update_from_str(ev.key().as_str(), true);
         }) as Box<dyn FnMut(_)>);
 
@@ -75,10 +73,10 @@ pub fn start() -> Result<(), JsValue> {
         closure.forget();
     }
     {
-        let world_ev_ku = world.clone();
+        let game_ev_ku = game.clone();
         let closure = Closure::wrap(Box::new(move |ev: web_sys::KeyboardEvent| {
-            let mut w: std::cell::RefMut<World> = world_ev_ku.borrow_mut();
-            let kp: &mut engine::KeyPress = w.get_mut().unwrap();
+            let mut w: std::cell::RefMut<engine::Game> = game_ev_ku.borrow_mut();
+            let kp: &mut engine::KeyPress = w.world.get_mut().unwrap();
             kp.update_from_str(ev.key().as_str(), false);
         }) as Box<dyn FnMut(_)>);
 
@@ -87,10 +85,10 @@ pub fn start() -> Result<(), JsValue> {
     }
 
     *imediate_closure.borrow_mut() = Some(Closure::wrap(Box::new(move || {
-        let mut w = world.borrow_mut();
-        mover.run_now(&mut w);
-        // physics.run_now(&mut w);
-        renderer.run_now(&mut w);
+        let mut g = game.borrow_mut();
+        g.run_sys();
+        mover.run_now(&mut g.world);
+        renderer.run_now(&mut g.world);
 
         request_animation_frame(closure.borrow().as_ref().unwrap()).unwrap();
     }) as Box<dyn FnMut()>));

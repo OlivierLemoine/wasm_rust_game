@@ -5,7 +5,11 @@ mod physics;
 mod render;
 mod transform;
 
+pub mod types {
+    pub use crate::collider::ColliderType;
+}
 pub mod builder {
+    pub use crate::collider::ColliderBuilder;
     pub use crate::physics::RigidBodyBuilder;
     pub use crate::transform::TransformBuilder;
 }
@@ -26,13 +30,29 @@ pub use specs;
 
 use specs::prelude::*;
 
-pub fn new_world() -> World {
-    let mut world = World::new();
-    world.insert(event::KeyPress::default());
-    world.insert(camera::Camera::default());
-    world.register::<collider::Collider>();
-    world.register::<physics::RigidBody>();
-    world.register::<transform::Transform>();
-    world.register::<render::sprite::Sprite>();
-    world
+pub struct Game {
+    pub world: specs::shred::World,
+    physics: physics::PhysicsSystem,
+}
+
+impl Game {
+    pub fn new() -> Self {
+        let mut world = World::new();
+        world.insert(event::KeyPress::default());
+        world.insert(camera::Camera::default());
+        world.register::<collider::Collider>();
+        world.register::<physics::RigidBody>();
+        world.register::<transform::Transform>();
+        world.register::<render::sprite::Sprite>();
+
+        let mut physics = physics::PhysicsSystem;
+
+        specs::shred::RunNow::setup(&mut physics, &mut world);
+
+        Game { world, physics }
+    }
+
+    pub fn run_sys(&mut self) {
+        self.physics.run_now(&mut self.world);
+    }
 }

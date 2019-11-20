@@ -1,7 +1,18 @@
-use std::ops::{Add, AddAssign, Div, DivAssign};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, Sub, SubAssign};
 
 #[derive(Default, Clone, Copy, Debug)]
 pub struct Vec2<T>(T, T);
+
+impl<T> Vec2<T> {
+    pub fn amplitude_squared(&self) -> T
+    where
+        T: Mul<Output = T>,
+        T: Add<Output = T>,
+        T: Copy,
+    {
+        self.0 * self.0 + self.1 * self.1
+    }
+}
 
 impl<T> From<(T, T)> for Vec2<T> {
     fn from(val: (T, T)) -> Self {
@@ -47,6 +58,22 @@ impl<T: DivAssign + Copy> Div<T> for Vec2<T> {
 
     fn div(mut self, other: T) -> Self {
         self /= other;
+        self
+    }
+}
+
+impl<T: SubAssign> SubAssign for Vec2<T> {
+    fn sub_assign(&mut self, other: Vec2<T>) {
+        self.0 -= other.0;
+        self.1 -= other.1;
+    }
+}
+
+impl<T: SubAssign> Sub for Vec2<T> {
+    type Output = Self;
+
+    fn sub(mut self, other: Vec2<T>) -> Self {
+        self -= other;
         self
     }
 }
