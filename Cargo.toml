@@ -32,3 +32,6 @@ features = [
 
 [dependencies.engine]
 path = "engine"
+
+[dependencies.log]
+path = "log"

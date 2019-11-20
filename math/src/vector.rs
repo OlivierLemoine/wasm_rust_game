@@ -1,6 +1,6 @@
 use std::ops::{Add, AddAssign, Div, DivAssign};
 
-#[derive(Default, Clone, Copy)]
+#[derive(Default, Clone, Copy, Debug)]
 pub struct Vec2<T>(T, T);
 
 impl<T> From<(T, T)> for Vec2<T> {

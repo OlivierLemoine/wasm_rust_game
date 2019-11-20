@@ -8,11 +8,11 @@ extern "C" {
 
 #[macro_export]
 macro_rules! console_log {
-    ($v: expr) => {
-        self::__log($v)
-    };
+    // ($v: expr) => {
+    //     self::__log($v)
+    // };
     ($($arg:tt)*) => {
-        self::__log(format!($($arg)*))
+        self::__log(format!($($arg)*).as_str())
     };
 }
 

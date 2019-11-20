@@ -1,11 +1,10 @@
 use super::transform::Transform;
 use lazy_static::*;
-use log::*;
 use math::Vec2;
 use specs::prelude::*;
 
 lazy_static! {
-    static ref GRAVITY: Vec2<f64> = Vec2::from((0.0, -9.90));
+    static ref GRAVITY: Vec2<f64> = Vec2::from((0.0, -9.90 / 60.0));
 }
 
 pub struct RigidBodyBuilder {
@@ -53,7 +52,6 @@ impl<'a> System<'a> for PhysicsSystem {
     type SystemData = (WriteStorage<'a, Transform>, WriteStorage<'a, RigidBody>);
 
     fn run(&mut self, (mut transforms, mut rigid_bodies): Self::SystemData) {
-        // console_log!("test");
         for (t, r) in (&mut transforms, &mut rigid_bodies).join() {
             r.acceleration += r.force / r.mass + *GRAVITY;
             r.velocity += r.acceleration;

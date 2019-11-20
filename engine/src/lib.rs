@@ -1,3 +1,4 @@
+mod camera;
 mod collider;
 mod event;
 mod physics;
@@ -13,6 +14,7 @@ pub mod components {
 pub mod systems {
     pub use crate::physics::PhysicsSystem;
 }
+pub use camera::Camera;
 pub use event::KeyPress;
 pub use math;
 pub use render::{color::Color, image::Image};
@@ -23,6 +25,7 @@ use specs::prelude::*;
 pub fn new_world() -> World {
     let mut world = World::new();
     world.insert(event::KeyPress::default());
+    world.insert(camera::Camera::default());
     world.register::<collider::Collider>();
     world.register::<physics::RigidBody>();
     world.register::<transform::Transform>();

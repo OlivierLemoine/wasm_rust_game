@@ -1,8 +1,9 @@
 use engine::components::{Sprite, Transform};
 use engine::specs::prelude::*;
-use engine::Image;
+use engine::{Camera, Image};
 use js_sys::*;
 use lazy_static::*;
+use log::*;
 use std::f64;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::{Clamped, JsCast};
@@ -15,20 +16,31 @@ lazy_static! {
 pub struct SysRender;
 
 impl<'a> System<'a> for SysRender {
-    type SystemData = (ReadStorage<'a, Transform>, ReadStorage<'a, Sprite>);
+    type SystemData = (
+        Read<'a, Camera>,
+        ReadStorage<'a, Transform>,
+        ReadStorage<'a, Sprite>,
+    );
 
-    fn run(&mut self, (transforms, sprites): Self::SystemData) {
+    fn run(&mut self, (camera, transforms, sprites): Self::SystemData) {
         for (t, s) in (&transforms, &sprites).join() {
-            let t: &Transform = t;
-            let s: &Sprite = s;
             let ctx: &Context = &CTX;
 
-            ctx.draw(
-                s.image(),
-                *t.position().x() as u32,
-                *t.position().y() as u32,
-            )
-            .unwrap();
+            let val = *t.position().y();
+
+            let image_center_x = s.image().width() as i32 / 2;
+            let image_center_y = s.image().height() as i32 / 2;
+
+            let canvas_center_x = ctx.width as i32 / 2;
+            let canvas_center_y = ctx.height as i32 / 2;
+
+            let obj_center_x = *t.position().x() as i32;
+            let obj_center_y = *t.position().y() as i32;
+
+            let pos_x = canvas_center_x - image_center_x + obj_center_x;
+            let pos_y = canvas_center_y - image_center_y - obj_center_y;
+
+            ctx.draw(s.image(), pos_x as u32, pos_y as u32).unwrap();
         }
     }
 }

@@ -6,6 +6,7 @@ use engine::specs::prelude::*;
 use engine::systems::*;
 use helper::{body, request_animation_frame};
 use js_sys::*;
+use log::*;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
@@ -22,10 +23,10 @@ impl<'a> System<'a> for TestMove {
         for t in (&mut transforms).join() {
             let speed = 5.0;
             if kp.w() {
-                t.translate(engine::math::Vec2::from((0.0, -speed)));
+                t.translate(engine::math::Vec2::from((0.0, speed)));
             }
             if kp.s() {
-                t.translate(engine::math::Vec2::from((0.0, speed)));
+                t.translate(engine::math::Vec2::from((0.0, -speed)));
             }
             if kp.d() {
                 t.translate(engine::math::Vec2::from((speed, 0.0)));
@@ -79,7 +80,7 @@ pub fn start() -> Result<(), JsValue> {
     *imediate_closure.borrow_mut() = Some(Closure::wrap(Box::new(move || {
         let mut w = world.borrow_mut();
         mover.run_now(&mut w);
-        physics.run_now(&mut w);
+        // physics.run_now(&mut w);
         renderer.run_now(&mut w);
 
         request_animation_frame(closure.borrow().as_ref().unwrap()).unwrap();

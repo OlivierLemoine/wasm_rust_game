@@ -1,7 +1,7 @@
 use math::Vec2;
 use specs::prelude::*;
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct Transform {
     position: Vec2<f64>,
     rotation: f64,

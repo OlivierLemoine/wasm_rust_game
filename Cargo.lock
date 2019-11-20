@@ -504,6 +504,7 @@ dependencies = [
  "engine 0.1.0",
  "js-sys 0.3.31 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.1.0",
  "wasm-bindgen 0.2.54 (registry+https://github.com/rust-lang/crates.io-index)",
  "web-sys 0.3.31 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
