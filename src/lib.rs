@@ -1,9 +1,9 @@
 mod draw;
 mod helper;
 
-use engine::components::*;
 use engine::specs::prelude::*;
-use engine::systems::*;
+use engine::specs::prelude::*;
+use engine::{builder::*, components::*, systems::*};
 use helper::{body, request_animation_frame};
 use js_sys::*;
 use log::*;
@@ -12,15 +12,23 @@ use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
+#[derive(Default)]
+struct Player;
 struct TestMove;
 
-use engine::specs::prelude::*;
+impl Component for Player {
+    type Storage = NullStorage<Self>;
+}
 
 impl<'a> System<'a> for TestMove {
-    type SystemData = (Read<'a, engine::KeyPress>, WriteStorage<'a, Transform>);
+    type SystemData = (
+        Read<'a, engine::KeyPress>,
+        WriteStorage<'a, Transform>,
+        ReadStorage<'a, Player>,
+    );
 
-    fn run(&mut self, (kp, mut transforms): Self::SystemData) {
-        for t in (&mut transforms).join() {
+    fn run(&mut self, (kp, mut transforms, players): Self::SystemData) {
+        for (t, _) in (&mut transforms, &players).join() {
             let speed = 5.0;
             if kp.w() {
                 t.translate(engine::math::Vec2::from((0.0, speed)));
@@ -41,6 +49,7 @@ impl<'a> System<'a> for TestMove {
 #[wasm_bindgen]
 pub fn start() -> Result<(), JsValue> {
     let mut world = engine::new_world();
+    world.register::<Player>();
     init(&mut world);
 
     let closure = Rc::new(RefCell::new(None));
@@ -103,8 +112,22 @@ fn init(world: &mut World) {
         .with(RigidBodyBuilder::new().set_mass(10.0).build())
         .with(Sprite::from(vec![engine::Image::rec(
             engine::Color::red(),
-            100,
-            100,
+            50,
+            50,
+        )]))
+        .with(Player)
+        .build();
+    world
+        .create_entity()
+        .with(
+            TransformBuilder::new()
+                .position(engine::math::Vec2::from((0.0, -100.0)))
+                .build(),
+        )
+        .with(Sprite::from(vec![engine::Image::rec(
+            engine::Color::blue(),
+            800,
+            30,
         )]))
         .build();
 }

@@ -23,9 +23,10 @@ impl<'a> System<'a> for SysRender {
     );
 
     fn run(&mut self, (camera, transforms, sprites): Self::SystemData) {
-        for (t, s) in (&transforms, &sprites).join() {
-            let ctx: &Context = &CTX;
+        let ctx: &Context = &CTX;
+        ctx.clear();
 
+        for (t, s) in (&transforms, &sprites).join() {
             let val = *t.position().y();
 
             let image_center_x = s.image().width() as i32 / 2;
@@ -72,8 +73,6 @@ impl Context {
     }
 
     pub fn draw(&self, img: &Image, pos_x: u32, pos_y: u32) -> Result<(), JsValue> {
-        self.ctx
-            .clear_rect(0.0, 0.0, self.width as f64, self.height as f64);
         let data = ImageData::new_with_u8_clamped_array_and_sh(
             Clamped(&mut img.data().clone()),
             img.width(),
@@ -81,5 +80,10 @@ impl Context {
         )?;
         self.ctx.put_image_data(&data, pos_x as f64, pos_y as f64)?;
         Ok(())
+    }
+
+    pub fn clear(&self) {
+        self.ctx
+            .clear_rect(0.0, 0.0, self.width as f64, self.height as f64);
     }
 }

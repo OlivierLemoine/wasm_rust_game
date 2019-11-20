@@ -5,9 +5,13 @@ mod physics;
 mod render;
 mod transform;
 
+pub mod builder {
+    pub use crate::physics::RigidBodyBuilder;
+    pub use crate::transform::TransformBuilder;
+}
 pub mod components {
     pub use crate::collider::Collider;
-    pub use crate::physics::{RigidBody, RigidBodyBuilder};
+    pub use crate::physics::RigidBody;
     pub use crate::render::sprite::Sprite;
     pub use crate::transform::Transform;
 }
