@@ -22,7 +22,7 @@ impl ColliderType {
                 let rad = (r1 + r2) * (r1 + r2);
                 if rad > dist {
                     let depl = rad.sqrt() - dist.sqrt();
-                    Some(-line - depl)
+                    Some(-line.normalize() * depl)
                 } else {
                     None
                 }
@@ -100,10 +100,30 @@ impl<'a> System<'a> for CollideSystem {
                     {
                         console_log!("{:?}", v);
                         c.0 = Some(Collision { with: e2, at: v });
-                        pause();
+                        // pause();
                     }
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn collide_2_circle() {
+        let c1 = ColliderType::Circle(1.0);
+        let c2 = ColliderType::Circle(1.0);
+
+        let p1 = Vec2::from((0.0f64, 0.0));
+        let p2 = Vec2::from((2.0f64, 0.0));
+        assert_eq!(c1.collide_with(&c2, p1, p2), None);
+        let p2 = Vec2::from((1.0f64, 0.0));
+        assert_eq!(
+            c1.collide_with(&c2, p1, p2),
+            Some(Vec2::from((-1.0f64, 0.0)))
+        );
     }
 }

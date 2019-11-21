@@ -15,17 +15,3 @@ path = "../math"
 
 [dependencies.log]
 path = "../log"
-
-[dependencies.web-sys]
-version = "0.3"
-features = [
-    'CanvasRenderingContext2d',
-    'Document',
-    'Element',
-    'EventTarget',
-    'HtmlElement',
-    'HtmlCanvasElement',
-    'ImageData',
-    'KeyboardEvent',
-    'Window',
-]

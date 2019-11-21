@@ -1,6 +1,6 @@
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, Neg, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
-#[derive(Default, Clone, Copy, Debug)]
+#[derive(Default, Clone, Copy, Debug, PartialEq)]
 pub struct Vec2<T>(T, T);
 
 impl<T> Vec2<T> {
@@ -109,6 +109,22 @@ impl<T: SubAssign + Copy> Sub<T> for Vec2<T> {
     }
 }
 
+impl<T: MulAssign + Copy> MulAssign<T> for Vec2<T> {
+    fn mul_assign(&mut self, other: T) {
+        self.0 *= other;
+        self.1 *= other;
+    }
+}
+
+impl<T: MulAssign + Copy> Mul<T> for Vec2<T> {
+    type Output = Self;
+
+    fn mul(mut self, other: T) -> Self {
+        self *= other;
+        self
+    }
+}
+
 impl<T: Neg<Output = T>> Neg for Vec2<T> {
     type Output = Vec2<T>;
 
@@ -116,5 +132,22 @@ impl<T: Neg<Output = T>> Neg for Vec2<T> {
         self.0 = -self.0;
         self.1 = -self.1;
         self
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn vec_from_tuple() {
+        let v = Vec2::from((3u32, 5));
+        assert_eq!(v, Vec2(3u32, 5));
+    }
+
+    #[test]
+    fn vec_add_with_vec() {
+        let v1 = Vec2(3u32, 5);
+        let v2 = Vec2(4u32, 1);
+        assert_eq!(v1 + v2, Vec2(7u32, 6));
     }
 }
