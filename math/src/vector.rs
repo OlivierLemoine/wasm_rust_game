@@ -14,6 +14,12 @@ impl<T> Vec2<T> {
     }
 }
 
+impl Vec2<f64> {
+    pub fn normalize(self) -> Self {
+        self / self.amplitude_squared().sqrt()
+    }
+}
+
 impl<T> From<(T, T)> for Vec2<T> {
     fn from(val: (T, T)) -> Self {
         Vec2(val.0, val.1)
@@ -36,11 +42,24 @@ impl<T: AddAssign> AddAssign for Vec2<T> {
         self.1 += other.1;
     }
 }
-
 impl<T: AddAssign> Add for Vec2<T> {
     type Output = Self;
 
     fn add(mut self, other: Self) -> Self {
+        self += other;
+        self
+    }
+}
+impl<T: AddAssign + Copy> AddAssign<T> for Vec2<T> {
+    fn add_assign(&mut self, other: T) {
+        self.0 += other;
+        self.1 += other;
+    }
+}
+impl<T: AddAssign + Copy> Add<T> for Vec2<T> {
+    type Output = Self;
+
+    fn add(mut self, other: T) -> Self {
         self += other;
         self
     }
@@ -52,7 +71,6 @@ impl<T: DivAssign + Copy> DivAssign<T> for Vec2<T> {
         self.1 /= other;
     }
 }
-
 impl<T: DivAssign + Copy> Div<T> for Vec2<T> {
     type Output = Self;
 
@@ -68,11 +86,24 @@ impl<T: SubAssign> SubAssign for Vec2<T> {
         self.1 -= other.1;
     }
 }
-
 impl<T: SubAssign> Sub for Vec2<T> {
     type Output = Self;
 
     fn sub(mut self, other: Vec2<T>) -> Self {
+        self -= other;
+        self
+    }
+}
+impl<T: SubAssign + Copy> SubAssign<T> for Vec2<T> {
+    fn sub_assign(&mut self, other: T) {
+        self.0 -= other;
+        self.1 -= other;
+    }
+}
+impl<T: SubAssign + Copy> Sub<T> for Vec2<T> {
+    type Output = Self;
+
+    fn sub(mut self, other: T) -> Self {
         self -= other;
         self
     }

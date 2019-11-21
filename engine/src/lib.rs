@@ -14,7 +14,7 @@ pub mod builder {
     pub use crate::transform::TransformBuilder;
 }
 pub mod components {
-    pub use crate::collider::Collider;
+    pub use crate::collider::{Collider, Collisions};
     pub use crate::physics::RigidBody;
     pub use crate::render::sprite::Sprite;
     pub use crate::transform::Transform;
@@ -33,6 +33,7 @@ use specs::prelude::*;
 pub struct Game {
     pub world: specs::shred::World,
     physics: physics::PhysicsSystem,
+    collider: collider::CollideSystem,
 }
 
 impl Game {
@@ -41,18 +42,26 @@ impl Game {
         world.insert(event::KeyPress::default());
         world.insert(camera::Camera::default());
         world.register::<collider::Collider>();
+        world.register::<collider::Collisions>();
         world.register::<physics::RigidBody>();
         world.register::<transform::Transform>();
         world.register::<render::sprite::Sprite>();
 
         let mut physics = physics::PhysicsSystem;
+        let mut collider = collider::CollideSystem;
 
         specs::shred::RunNow::setup(&mut physics, &mut world);
+        specs::shred::RunNow::setup(&mut collider, &mut world);
 
-        Game { world, physics }
+        Game {
+            world,
+            physics,
+            collider,
+        }
     }
 
     pub fn run_sys(&mut self) {
+        self.collider.run_now(&mut self.world);
         self.physics.run_now(&mut self.world);
     }
 }

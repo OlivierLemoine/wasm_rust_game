@@ -1,4 +1,4 @@
-use super::collider::Collider;
+use super::collider::Collisions;
 use super::transform::Transform;
 use lazy_static::*;
 use math::Vec2;
@@ -53,14 +53,24 @@ impl<'a> System<'a> for PhysicsSystem {
     type SystemData = (
         WriteStorage<'a, Transform>,
         WriteStorage<'a, RigidBody>,
-        ReadStorage<'a, Collider>,
+        WriteStorage<'a, Collisions>,
     );
 
-    fn run(&mut self, (mut transforms, mut rigid_bodies, colliders): Self::SystemData) {
-        for (t, r, c) in (&mut transforms, &mut rigid_bodies, &colliders).join() {
-            r.acceleration += r.force / r.mass + *GRAVITY;
-            r.velocity += r.acceleration;
-            *t.position_mut() += r.velocity;
+    fn run(&mut self, (mut transforms, mut rigid_bodies, mut collisions): Self::SystemData) {
+        for (t, r, c) in (&mut transforms, &mut rigid_bodies, &mut collisions).join() {
+            if let Some(v) = c.0.take() {
+                r.acceleration = Vec2::from((0.0, 0.0));
+                r.velocity = Vec2::from((0.0, 0.0));
+                *t.position_mut() += v.at;
+            } else {
+                r.acceleration = if r.mass > 0.0 {
+                    r.force / r.mass + *GRAVITY
+                } else {
+                    Vec2::from((0.0, 0.0))
+                };
+                r.velocity += r.acceleration;
+                *t.position_mut() += r.velocity;
+            }
         }
     }
 }
