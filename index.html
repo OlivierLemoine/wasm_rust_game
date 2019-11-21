@@ -11,10 +11,13 @@
             id="game"
             width="1000px"
             height="500px"
-            style="background-color: rgb(40, 40, 40);"
+            style="background-color: rgb(255, 255, 255);"
         ></canvas>
         <script type="module">
             import init, { start } from './pkg/wasm.js';
+            window.pause = () => {
+                debugger;
+            };
             (async () => {
                 await init();
                 start();

@@ -4,6 +4,7 @@ use wasm_bindgen::prelude::*;
 extern "C" {
     #[wasm_bindgen(js_namespace = console, js_name = log)]
     pub fn __log(s: &str);
+    pub fn pause();
 }
 
 #[macro_export]
