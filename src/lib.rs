@@ -3,7 +3,7 @@ mod helper;
 
 use engine::specs::prelude::*;
 use engine::specs::prelude::*;
-use engine::{builder::*, components::*, systems::*};
+use engine::{builder::*, components::*, systems::*, types::*};
 use helper::{body, request_animation_frame};
 use js_sys::*;
 use log::*;
@@ -58,6 +58,8 @@ pub fn start() -> Result<(), JsValue> {
     engine::specs::shred::RunNow::setup(&mut mover, &mut game.world);
     let mut renderer = draw::SysRender;
     engine::specs::shred::RunNow::setup(&mut renderer, &mut game.world);
+    let mut deb = draw::DebugCollider;
+    engine::specs::shred::RunNow::setup(&mut deb, &mut game.world);
 
     let game = Rc::new(RefCell::new(game));
 
@@ -89,6 +91,7 @@ pub fn start() -> Result<(), JsValue> {
         g.run_sys();
         mover.run_now(&mut g.world);
         renderer.run_now(&mut g.world);
+        deb.run_now(&mut g.world);
 
         request_animation_frame(closure.borrow().as_ref().unwrap()).unwrap();
     }) as Box<dyn FnMut()>));
@@ -107,7 +110,13 @@ fn init(world: &mut World) {
     world
         .create_entity()
         .with(Transform::default())
-        .with(RigidBodyBuilder::new().set_mass(10.0).build())
+        .with(RigidBodyBuilder::new().set_mass(1.0).build())
+        .with(
+            ColliderBuilder::new()
+                .collider_type(ColliderType::Circle(25.0))
+                .build(),
+        )
+        .with(Collisions::default())
         .with(Sprite::from(vec![engine::Image::rec(
             engine::Color::red(),
             50,
@@ -122,6 +131,12 @@ fn init(world: &mut World) {
                 .position(engine::math::Vec2::from((0.0, -100.0)))
                 .build(),
         )
+        .with(
+            ColliderBuilder::new()
+                .collider_type(ColliderType::Circle(15.0))
+                .build(),
+        )
+        .with(Collisions::default())
         .with(Sprite::from(vec![engine::Image::rec(
             engine::Color::blue(),
             800,
