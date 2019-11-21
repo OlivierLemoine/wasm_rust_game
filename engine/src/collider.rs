@@ -21,8 +21,8 @@ impl ColliderType {
                 let dist = line.amplitude_squared();
                 let rad = (r1 + r2) * (r1 + r2);
                 if rad > dist {
-                    let depl = rad.sqrt() - dist.sqrt();
-                    Some(line - depl)
+                    let depl = dist.sqrt() - rad.sqrt();
+                    Some(-line - depl)
                 } else {
                     None
                 }

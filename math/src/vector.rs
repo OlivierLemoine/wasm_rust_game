@@ -1,4 +1,4 @@
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, Neg, Sub, SubAssign};
 
 #[derive(Default, Clone, Copy, Debug)]
 pub struct Vec2<T>(T, T);
@@ -105,6 +105,16 @@ impl<T: SubAssign + Copy> Sub<T> for Vec2<T> {
 
     fn sub(mut self, other: T) -> Self {
         self -= other;
+        self
+    }
+}
+
+impl<T: Neg<Output = T>> Neg for Vec2<T> {
+    type Output = Vec2<T>;
+
+    fn neg(mut self) -> Self {
+        self.0 = -self.0;
+        self.1 = -self.1;
         self
     }
 }
