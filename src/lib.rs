@@ -29,7 +29,7 @@ impl<'a> System<'a> for TestMove {
 
     fn run(&mut self, (kp, mut transforms, players): Self::SystemData) {
         for (t, _) in (&mut transforms, &players).join() {
-            let speed = 5.0;
+            let speed = 2.0;
             if kp.w() {
                 t.translate(engine::math::Vec2::from((0.0, speed)));
             }
@@ -109,23 +109,6 @@ pub fn start() -> Result<(), JsValue> {
 fn init(world: &mut World) {
     world
         .create_entity()
-        .with(Transform::default())
-        .with(RigidBodyBuilder::new().set_mass(1.0).build())
-        .with(
-            ColliderBuilder::new()
-                .collider_type(ColliderType::Circle(25.0))
-                .build(),
-        )
-        .with(Collisions::default())
-        .with(Sprite::from(vec![engine::Image::rec(
-            engine::Color::red(),
-            50,
-            50,
-        )]))
-        .with(Player)
-        .build();
-    world
-        .create_entity()
         .with(
             TransformBuilder::new()
                 .position(engine::math::Vec2::from((0.0, -100.0)))
@@ -142,5 +125,22 @@ fn init(world: &mut World) {
             800,
             30,
         )]))
+        .build();
+    world
+        .create_entity()
+        .with(Transform::default())
+        .with(RigidBodyBuilder::new().set_mass(1.0).build())
+        .with(
+            ColliderBuilder::new()
+                .collider_type(ColliderType::Circle(25.0))
+                .build(),
+        )
+        .with(Collisions::default())
+        .with(Sprite::from(vec![engine::Image::rec(
+            engine::Color::red(),
+            50,
+            50,
+        )]))
+        .with(Player)
         .build();
 }

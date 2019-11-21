@@ -6,6 +6,7 @@ use specs::prelude::*;
 
 pub enum ColliderType {
     Circle(f64),
+    Rect(f64, f64),
     None,
 }
 impl ColliderType {
@@ -27,6 +28,7 @@ impl ColliderType {
                     None
                 }
             }
+            (ColliderType::Rect(w1, h1), ColliderType::Rect(w2, h2)) => None,
             (_, _) => None,
         }
     }
@@ -98,7 +100,7 @@ impl<'a> System<'a> for CollideSystem {
                     if let Some(v) =
                         c1.0.collide_with(&c2.0, t.position().clone(), t2.position().clone())
                     {
-                        console_log!("{:?}", v);
+                        // console_log!("{:?}", v);
                         c.0 = Some(Collision { with: e2, at: v });
                         // pause();
                     }
