@@ -39,12 +39,7 @@ impl<'a> System<'a> for DebugCollider {
                     ctx.draw_circle(pos_x, pos_y, r).unwrap();
                 }
                 engine::types::ColliderType::Rect(w, h) => {
-                    // ctx.draw(
-                    //     &Image::rec(engine::Color::green(), w as usize, h as usize),
-                    //     pos_x as u32,
-                    //     pos_y as u32,
-                    // )
-                    // .unwrap();
+                    ctx.draw_rect(pos_x - w / 2.0, pos_y - h / 2.0, w, h).unwrap();
                 }
                 _ => {}
             }
@@ -122,6 +117,14 @@ impl Context {
         self.ctx.set_stroke_style(&JsValue::from("green"));
         self.ctx.begin_path();
         self.ctx.arc(x, y, r, 0.0, 6.28318530718)?;
+        self.ctx.stroke();
+        Ok(())
+    }
+
+    pub fn draw_rect(&self, x: f64, y: f64, w: f64, h: f64) -> Result<(), JsValue> {
+        self.ctx.set_stroke_style(&JsValue::from("green"));
+        self.ctx.begin_path();
+        self.ctx.rect(x, y, w, h);
         self.ctx.stroke();
         Ok(())
     }

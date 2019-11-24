@@ -16,6 +16,18 @@ macro_rules! min {
     }}
 }
 
+macro_rules! min_abs {
+    ($x: expr) => ($x);
+    ($x: expr, $($z: expr),+) => {{
+        let y = min!($($z),*);
+        if $x.abs() < y.abs() {
+            $x
+        } else {
+            y
+        }
+    }}
+}
+
 pub enum ColliderType {
     Circle(f64),
     Rect(f64, f64),
@@ -41,55 +53,83 @@ impl ColliderType {
                 }
             }
             (ColliderType::Rect(w1, h1), ColliderType::Rect(w2, h2)) => {
-                let w1 = *w1;
-                let h1 = *h1;
-                let w2 = *w2;
-                let h2 = *h2;
-                let corner_bl = Vec2::from((-w1, -h1)) + p1;
-                // let corner_tr = Vec2::from((w1, h1)) + p1;
-                // let corner_bl = Vec2::from((-w1, -h1)) + p1;
-                let corner_tr = Vec2::from((w1, h1)) + p1;
-                let res = vec![
-                    Vec2::from((-w2, -h2)),
-                    Vec2::from((w2, -h2)),
-                    Vec2::from((-w2, h2)),
-                    Vec2::from((w2, h2)),
+                println!("{:?} {:?}", p1, p2);
+                let w1 = *w1 / 2.0;
+                let h1 = *h1 / 2.0;
+                let w2 = *w2 / 2.0;
+                let h2 = *h2 / 2.0;
+
+                let b1_x_min = p1.x() - w1;
+                let b1_x_max = p1.x() + w1;
+                let b1_y_min = p1.y() - h1;
+                let b1_y_max = p1.y() + h1;
+
+                let b2_x_min = p2.x() - w2;
+                let b2_x_max = p2.x() + w2;
+                let b2_y_min = p2.y() - h2;
+                let b2_y_max = p2.y() + h2;
+
+                println!(
+                    "{:?}",
+                    [
+                        (b1_x_min, b1_y_min),
+                        (b1_x_min, b1_y_max),
+                        (b1_x_max, b1_y_min),
+                        (b1_x_max, b1_y_max),
+                    ]
+                );
+
+                [
+                    (b1_x_min, b1_y_min),
+                    (b1_x_min, b1_y_max),
+                    (b1_x_max, b1_y_min),
+                    (b1_x_max, b1_y_max),
                 ]
                 .iter()
-                .map(|v| p2 + *v)
-                .map(|p| {
-                    // console_log!("{:?}", p);
-                    if corner_bl <= p && p <= corner_tr {
-                        Some(p)
+                .map(|(x, y)| {
+                    println!("{} < {} < {}", b2_x_min, x, b2_x_max);
+                    if b2_x_min < *x && *x < b2_x_max && b2_y_min < *y && *y < b2_y_max {
+                        let v1 = min_abs!(x - b2_x_min, x - b2_x_max);
+                        let v2 = min_abs!(y - b2_y_min, y - b2_y_max);
+                        println!("{} {}", v1, v2);
+                        if v2 == 0.0 || v1 != 0.0 && v1.abs() < v2.abs() {
+                            // println!("oui");
+                            Some(Vec2::from((-v1, 0.0)))
+                        } else {
+                            // println!("non");
+                            Some(Vec2::from((0.0, -v2)))
+                        }
                     } else {
                         None
                     }
                 })
                 .flat_map(|x| x)
-                .next();
-                // console_log!("{:?} {:?}", corner_bl, corner_tr);
-                // console_log!("{:?}", res);
-                // pause();
-                if let Some(v) = res {
-                    // console_log!("test");
-                    // pause();
-                    let d1 = v.x() - corner_bl.x();
-                    let d2 = v.x() - corner_tr.x();
-                    let d3 = v.y() - corner_bl.y();
-                    let d4 = v.y() - corner_tr.y();
-                    let min = min!(d1, d2, d3, d4);
-                    if min == d1 {
-                        Some(Vec2::from((d1, 0.0)))
-                    } else if min == d2 {
-                        Some(Vec2::from((-d2, 0.0)))
-                    } else if min == d3 {
-                        Some(Vec2::from((0.0, -d3)))
-                    } else {
-                        Some(Vec2::from((0.0, d4)))
-                    }
-                } else {
-                    None
-                }
+                .next()
+                .or_else(|| {
+                    [
+                        (b2_x_min, b2_y_min),
+                        (b2_x_min, b2_y_max),
+                        (b2_x_max, b2_y_min),
+                        (b2_x_max, b2_y_max),
+                    ]
+                    .iter()
+                    .map(|(x, y)| {
+                        // println!("{} < {} < {}", b1_x_min, x, b1_x_max);
+                        if b1_x_min < *x && *x < b1_x_max && b1_y_min < *y && *y < b1_y_max {
+                            let v1 = min_abs!(x - b1_x_min, x - b1_x_max);
+                            let v2 = min_abs!(y - b1_y_min, y - b1_y_max);
+                            if v2 == 0.0 || v1 != 0.0 && v1.abs() < v2.abs() {
+                                Some(Vec2::from((v1, 0.0)))
+                            } else {
+                                Some(Vec2::from((0.0, v2)))
+                            }
+                        } else {
+                            None
+                        }
+                    })
+                    .flat_map(|x| x)
+                    .next()
+                })
             }
             (_, _) => None,
         }
@@ -162,10 +202,8 @@ impl<'a> System<'a> for CollideSystem {
                     if let Some(v) =
                         c1.0.collide_with(&c2.0, t.position().clone(), t2.position().clone())
                     {
-                        c.0 = Some(Collision { with: e2, at: v });
-                    } else if let Some(v) =
-                        c2.0.collide_with(&c1.0, t2.position().clone(), t.position().clone())
-                    {
+                        // console_log!("{:?} {:?} {:?}", v, t.position(), t2.position());
+                        // pause();
                         c.0 = Some(Collision { with: e2, at: v });
                     }
                 }
@@ -179,7 +217,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn collide_2_circle() {
+    fn collide_2_circles() {
         let c1 = ColliderType::Circle(1.0);
         let c2 = ColliderType::Circle(1.0);
 
@@ -191,5 +229,66 @@ mod test {
             c1.collide_with(&c2, p1, p2),
             Some(Vec2::from((-1.0f64, 0.0)))
         );
+    }
+
+    #[test]
+    fn collide_2_rectangles() {
+        let r1 = ColliderType::Rect(2.0, 2.0);
+        let r2 = ColliderType::Rect(2.0, 2.0);
+
+        let p1 = Vec2::from((0.0f64, 0.0));
+        let p2 = Vec2::from((3.0f64, 0.0));
+        assert_eq!(r1.collide_with(&r2, p1, p2), None);
+
+        let p2 = Vec2::from((1.5f64, 0.0));
+        assert_eq!(
+            r1.collide_with(&r2, p1, p2),
+            Some(Vec2::from((-0.5f64, 0.0)))
+        );
+
+        let p2 = Vec2::from((-1.5f64, 0.0));
+        assert_eq!(
+            r1.collide_with(&r2, p1, p2),
+            Some(Vec2::from((0.5f64, 0.0)))
+        );
+
+        let p2 = Vec2::from((0.0f64, 1.5));
+        assert_eq!(
+            r1.collide_with(&r2, p1, p2),
+            Some(Vec2::from((0.0f64, -0.5)))
+        );
+
+        let p2 = Vec2::from((0.0f64, -1.5));
+        assert_eq!(
+            r1.collide_with(&r2, p1, p2),
+            Some(Vec2::from((0.0f64, 0.5)))
+        );
+
+        let r2 = ColliderType::Rect(8.0, 8.0);
+
+        let p2 = Vec2::from((0.0f64, 4.0));
+        assert_eq!(
+            r1.collide_with(&r2, p1, p2),
+            Some(Vec2::from((0.0f64, -1.0)))
+        );
+
+        let p2 = Vec2::from((0.0f64, -4.0));
+        assert_eq!(
+            r1.collide_with(&r2, p1, p2),
+            Some(Vec2::from((0.0f64, 1.0)))
+        );
+
+        // panic!();
+    }
+
+    #[test]
+    fn acollide() {
+        let r1 = ColliderType::Rect(50.0, 50.0);
+        let r2 = ColliderType::Rect(100.0, 30.0);
+
+        let p1 = Vec2::from((0.0, -60.0));
+        let p2 = Vec2::from((0.0, -100.0));
+
+        assert_eq!(r1.collide_with(&r2, p1, p2), None);
     }
 }

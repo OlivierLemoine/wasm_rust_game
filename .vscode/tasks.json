@@ -6,7 +6,8 @@
         {
             "label": "watch",
             "type": "shell",
-            "command": "cargo-watch -i \"pkg/**/*\" -s \"wasm-pack build --target web\""
+            "command": "cargo-watch -i \"pkg/**/*\" -s \"wasm-pack build --target web\"",
+            "problemMatcher": []
         }
     ]
 }

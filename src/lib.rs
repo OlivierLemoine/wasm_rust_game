@@ -117,13 +117,13 @@ fn init(world: &mut World) {
         .with(
             ColliderBuilder::new()
                 // .collider_type(ColliderType::Circle(15.0))
-                .collider_type(ColliderType::Rect(800.0, 30.0))
+                .collider_type(ColliderType::Rect(100.0, 30.0))
                 .build(),
         )
         .with(Collisions::default())
         .with(Sprite::from(vec![engine::Image::rec(
             engine::Color::blue(),
-            800,
+            100,
             30,
         )]))
         .build();
