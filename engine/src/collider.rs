@@ -28,7 +28,36 @@ impl ColliderType {
                     None
                 }
             }
-            (ColliderType::Rect(w1, h1), ColliderType::Rect(w2, h2)) => None,
+            (ColliderType::Rect(w1, h1), ColliderType::Rect(w2, h2)) => {
+                let w1 = *w1;
+                let h1 = *h1;
+                let w2 = *w2;
+                let h2 = *h2;
+
+                let corner_tl = Vec2::from((-w1, h1)) + p1;
+                // let corner_tr = Vec2::from((w1, h1)) + p1;
+                // let corner_bl = Vec2::from((-w1, -h1)) + p1;
+                let corner_br = Vec2::from((w1, -h1)) + p1;
+
+                let res: Vec<_> = vec![
+                    Vec2::from((-w2, -h2)),
+                    Vec2::from((w2, -h2)),
+                    Vec2::from((-w2, h2)),
+                    Vec2::from((w2, h2)),
+                ]
+                .iter()
+                .map(|v| p2 + *v)
+                .map(|p| {
+                    if corner_tl <= p && p <= corner_br {
+                        Some(true)
+                    } else {
+                        None
+                    }
+                })
+                .filter_map(|x| x)
+                .collect();
+                None
+            }
             (_, _) => None,
         }
     }
