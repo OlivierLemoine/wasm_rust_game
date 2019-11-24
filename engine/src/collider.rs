@@ -4,6 +4,18 @@ use log::*;
 use math::Vec2;
 use specs::prelude::*;
 
+macro_rules! min {
+    ($x: expr) => ($x);
+    ($x: expr, $($z: expr),+) => {{
+        let y = min!($($z),*);
+        if $x < y {
+            $x
+        } else {
+            y
+        }
+    }}
+}
+
 pub enum ColliderType {
     Circle(f64),
     Rect(f64, f64),
@@ -33,13 +45,11 @@ impl ColliderType {
                 let h1 = *h1;
                 let w2 = *w2;
                 let h2 = *h2;
-
-                let corner_tl = Vec2::from((-w1, h1)) + p1;
+                let corner_bl = Vec2::from((-w1, -h1)) + p1;
                 // let corner_tr = Vec2::from((w1, h1)) + p1;
                 // let corner_bl = Vec2::from((-w1, -h1)) + p1;
-                let corner_br = Vec2::from((w1, -h1)) + p1;
-
-                let res: Vec<_> = vec![
+                let corner_tr = Vec2::from((w1, h1)) + p1;
+                let res = vec![
                     Vec2::from((-w2, -h2)),
                     Vec2::from((w2, -h2)),
                     Vec2::from((-w2, h2)),
@@ -48,15 +58,38 @@ impl ColliderType {
                 .iter()
                 .map(|v| p2 + *v)
                 .map(|p| {
-                    if corner_tl <= p && p <= corner_br {
-                        Some(true)
+                    // console_log!("{:?}", p);
+                    if corner_bl <= p && p <= corner_tr {
+                        Some(p)
                     } else {
                         None
                     }
                 })
-                .filter_map(|x| x)
-                .collect();
-                None
+                .flat_map(|x| x)
+                .next();
+                // console_log!("{:?} {:?}", corner_bl, corner_tr);
+                // console_log!("{:?}", res);
+                // pause();
+                if let Some(v) = res {
+                    // console_log!("test");
+                    // pause();
+                    let d1 = v.x() - corner_bl.x();
+                    let d2 = v.x() - corner_tr.x();
+                    let d3 = v.y() - corner_bl.y();
+                    let d4 = v.y() - corner_tr.y();
+                    let min = min!(d1, d2, d3, d4);
+                    if min == d1 {
+                        Some(Vec2::from((d1, 0.0)))
+                    } else if min == d2 {
+                        Some(Vec2::from((-d2, 0.0)))
+                    } else if min == d3 {
+                        Some(Vec2::from((0.0, -d3)))
+                    } else {
+                        Some(Vec2::from((0.0, d4)))
+                    }
+                } else {
+                    None
+                }
             }
             (_, _) => None,
         }
@@ -129,9 +162,11 @@ impl<'a> System<'a> for CollideSystem {
                     if let Some(v) =
                         c1.0.collide_with(&c2.0, t.position().clone(), t2.position().clone())
                     {
-                        // console_log!("{:?}", v);
                         c.0 = Some(Collision { with: e2, at: v });
-                        // pause();
+                    } else if let Some(v) =
+                        c2.0.collide_with(&c1.0, t2.position().clone(), t.position().clone())
+                    {
+                        c.0 = Some(Collision { with: e2, at: v });
                     }
                 }
             }

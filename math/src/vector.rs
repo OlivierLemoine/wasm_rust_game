@@ -1,6 +1,7 @@
+use std::cmp::Ordering;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
-#[derive(Default, Clone, Copy, Debug, PartialEq, PartialOrd)]
+#[derive(Default, Clone, Copy, Debug, PartialEq)]
 pub struct Vec2<T>(T, T);
 
 impl<T> Vec2<T> {
@@ -150,4 +151,35 @@ mod tests {
         let v2 = Vec2(4u32, 1);
         assert_eq!(v1 + v2, Vec2(7u32, 6));
     }
+}
+
+impl<T: PartialOrd> PartialOrd for Vec2<T> {
+    fn partial_cmp(&self, other: &Vec2<T>) -> Option<Ordering> {
+        if self.0 == other.0 && self.1 == other.1 {
+            Some(Ordering::Equal)
+        } else if self.0 <= other.0 && self.1 <= other.1 {
+            Some(Ordering::Less)
+        } else if self.0 >= other.0 && self.1 >= other.1 {
+            Some(Ordering::Greater)
+        } else {
+            None
+        }
+    }
+}
+
+#[test]
+fn ord() {
+    let v1 = Vec2::from((1u32, 1));
+    let v2 = Vec2::from((1u32, 1));
+    assert_eq!(v1.eq(&v2), true);
+    let v2 = Vec2::from((2u32, 2));
+    assert_eq!(v1.le(&v2), true);
+    let v2 = Vec2::from((2u32, 2));
+    assert_eq!(v1.le(&v2), true);
+    let v2 = Vec2::from((0u32, 2));
+    assert_ne!(v1.eq(&v2), true);
+    assert_ne!(v1.le(&v2), true);
+    assert_ne!(v1.ge(&v2), true);
+    assert_ne!(v1.lt(&v2), true);
+    assert_ne!(v1.gt(&v2), true);
 }

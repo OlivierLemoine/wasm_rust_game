@@ -116,7 +116,8 @@ fn init(world: &mut World) {
         )
         .with(
             ColliderBuilder::new()
-                .collider_type(ColliderType::Circle(15.0))
+                // .collider_type(ColliderType::Circle(15.0))
+                .collider_type(ColliderType::Rect(800.0, 30.0))
                 .build(),
         )
         .with(Collisions::default())
@@ -129,10 +130,11 @@ fn init(world: &mut World) {
     world
         .create_entity()
         .with(Transform::default())
-        .with(RigidBodyBuilder::new().set_mass(1.0).build())
+        .with(RigidBodyBuilder::new().set_mass(0.0).build())
         .with(
             ColliderBuilder::new()
-                .collider_type(ColliderType::Circle(25.0))
+                // .collider_type(ColliderType::Circle(25.0))
+                .collider_type(ColliderType::Rect(50.0, 50.0))
                 .build(),
         )
         .with(Collisions::default())

@@ -38,6 +38,14 @@ impl<'a> System<'a> for DebugCollider {
                 engine::types::ColliderType::Circle(r) => {
                     ctx.draw_circle(pos_x, pos_y, r).unwrap();
                 }
+                engine::types::ColliderType::Rect(w, h) => {
+                    // ctx.draw(
+                    //     &Image::rec(engine::Color::green(), w as usize, h as usize),
+                    //     pos_x as u32,
+                    //     pos_y as u32,
+                    // )
+                    // .unwrap();
+                }
                 _ => {}
             }
         }
