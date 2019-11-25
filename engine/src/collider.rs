@@ -1,9 +1,9 @@
 use crate::physics::RigidBody;
 use crate::transform::Transform;
-use std::ops::{Deref, DerefMut};
-// use log::*;
+use log::*;
 use math::Vec2;
 use specs::prelude::*;
+use std::ops::{Deref, DerefMut};
 
 macro_rules! min {
     ($x: expr) => ($x);
@@ -54,7 +54,6 @@ impl ColliderType {
                 }
             }
             (ColliderType::Rect(w1, h1), ColliderType::Rect(w2, h2)) => {
-                println!("{:?} {:?}", p1, p2);
                 let w1 = *w1 / 2.0;
                 let h1 = *h1 / 2.0;
                 let w2 = *w2 / 2.0;
@@ -69,16 +68,6 @@ impl ColliderType {
                 let b2_x_max = p2.x() + w2;
                 let b2_y_min = p2.y() - h2;
                 let b2_y_max = p2.y() + h2;
-
-                println!(
-                    "{:?}",
-                    [
-                        (b1_x_min, b1_y_min),
-                        (b1_x_min, b1_y_max),
-                        (b1_x_max, b1_y_min),
-                        (b1_x_max, b1_y_max),
-                    ]
-                );
 
                 [
                     (b1_x_min, b1_y_min),
@@ -132,6 +121,38 @@ impl ColliderType {
                     .next()
                 })
             }
+            (ColliderType::Rect(w, h), ColliderType::Circle(r)) => {
+                let w = *w / 2.0;
+                let h = *h / 2.0;
+
+                let b_x_min = p1.x() - w;
+                let b_x_max = p1.x() + w;
+                let b_y_min = p1.y() - h;
+                let b_y_max = p1.y() + h;
+
+                let radius_square = r * r;
+
+                [
+                    (b_x_min, b_y_min),
+                    (b_x_min, b_y_max),
+                    (b_x_max, b_y_min),
+                    (b_x_max, b_y_max),
+                ]
+                .iter()
+                .map(|(x, y)| {
+                    let dir = Vec2::from((*x, *y)) - p2;
+                    if (dir).amplitude_squared() < radius_square {
+                        Some(dir.normalize() * (r - dir.module()))
+                    } else {
+                        None
+                    }
+                })
+                .flat_map(|x| x)
+                .next()
+            }
+            (ColliderType::Circle(r), ColliderType::Rect(w, h)) => ColliderType::Rect(*w, *h)
+                .collide_with(&ColliderType::Circle(*r), p1, p2)
+                .map(|v| -v),
             (_, _) => None,
         }
     }

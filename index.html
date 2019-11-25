@@ -6,28 +6,32 @@
         <meta http-equiv="X-UA-Compatible" content="ie=edge" />
         <title>Document</title>
     </head>
-    <body style="background-color: rgb(31, 31, 31);">
+    <body
+        style="background-color: rgb(31, 31, 31); overflow: hidden;margin: 0; height: 100vh;"
+    >
         <canvas
             id="game"
-            width="1000px"
-            height="500px"
             style="background-color: rgb(255, 255, 255);"
         ></canvas>
         <script type="module">
-            import init, { start } from './pkg/wasm.js';
+            import init, { start, resize } from './pkg/wasm.js';
             window.pause = () => {
                 debugger;
             };
             (async () => {
+                let canvas = document.getElementById('game');
+                canvas.width = document.body.clientWidth;
+                canvas.height = document.body.clientHeight;
+
                 await init();
+                resize();
                 start();
 
-                // let canvas = document.getElementById('game');
-                // let ctx = canvas.getContext('2d');
-                // let i = new ImageData(10, 10);
-                // i.data[0] = 255;
-                // i.data[3] = 255;
-                // ctx.putImageData(i, 10, 10);
+                window.addEventListener('resize', () => {
+                    canvas.width = document.body.clientWidth;
+                    canvas.height = document.body.clientHeight;
+                    resize();
+                });
             })();
         </script>
     </body>

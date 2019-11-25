@@ -17,7 +17,11 @@ impl<T> Vec2<T> {
 
 impl Vec2<f64> {
     pub fn normalize(self) -> Self {
-        self / self.amplitude_squared().sqrt()
+        self / self.module()
+    }
+
+    pub fn module(&self) -> f64 {
+        self.amplitude_squared().sqrt()
     }
 }
 

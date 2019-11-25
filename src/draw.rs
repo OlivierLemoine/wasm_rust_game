@@ -13,6 +13,25 @@ lazy_static! {
     static ref CTX: Context = { Context::from_id("game").unwrap() };
 }
 
+static mut canvas_width: f64 = 1.0;
+static mut canvas_height: f64 = 1.0;
+
+#[wasm_bindgen]
+pub fn resize() {
+    let document = web_sys::window().unwrap().document().unwrap();
+    let canvas = document.get_element_by_id("game").unwrap();
+    let canvas: web_sys::HtmlCanvasElement =
+        canvas.dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
+
+    let width = canvas.width() as f64;
+    let height = canvas.height() as f64;
+
+    unsafe {
+        canvas_width = width;
+        canvas_height = height;
+    }
+}
+
 pub struct DebugCollider;
 impl<'a> System<'a> for DebugCollider {
     type SystemData = (
@@ -25,8 +44,8 @@ impl<'a> System<'a> for DebugCollider {
         let ctx: &Context = &CTX;
 
         for (t, c) in (&transforms, &colliders).join() {
-            let canvas_center_x = ctx.width as f64 / 2.0;
-            let canvas_center_y = ctx.height as f64 / 2.0;
+            let canvas_center_x = unsafe { canvas_width } as f64 / 2.0;
+            let canvas_center_y = unsafe { canvas_height } as f64 / 2.0;
 
             let obj_center_x = *t.position().x();
             let obj_center_y = *t.position().y();
@@ -64,8 +83,8 @@ impl<'a> System<'a> for SysRender {
             let image_center_x = s.image().width() as i32 / 2;
             let image_center_y = s.image().height() as i32 / 2;
 
-            let canvas_center_x = ctx.width as i32 / 2;
-            let canvas_center_y = ctx.height as i32 / 2;
+            let canvas_center_x = unsafe { canvas_width } as i32 / 2;
+            let canvas_center_y = unsafe { canvas_height } as i32 / 2;
 
             let obj_center_x = *t.position().x() as i32;
             let obj_center_y = *t.position().y() as i32;
@@ -80,8 +99,6 @@ impl<'a> System<'a> for SysRender {
 
 pub struct Context {
     ctx: web_sys::CanvasRenderingContext2d,
-    width: usize,
-    height: usize,
 }
 
 unsafe impl Sync for Context {}
@@ -101,7 +118,7 @@ impl Context {
             .ok_or(JsValue::from(Error::new("No context")))?
             .dyn_into::<web_sys::CanvasRenderingContext2d>()?;
 
-        Ok(Context { ctx, width, height })
+        Ok(Context { ctx })
     }
 
     pub fn draw(&self, img: &Image, pos_x: u32, pos_y: u32) -> Result<(), JsValue> {
@@ -131,7 +148,11 @@ impl Context {
     }
 
     pub fn clear(&self) {
-        self.ctx
-            .clear_rect(0.0, 0.0, self.width as f64, self.height as f64);
+        self.ctx.clear_rect(
+            0.0,
+            0.0,
+            unsafe { canvas_width } as f64,
+            unsafe { canvas_height } as f64,
+        );
     }
 }
