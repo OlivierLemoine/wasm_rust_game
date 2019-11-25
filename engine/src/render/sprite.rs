@@ -34,27 +34,31 @@ impl SpriteBuilder {
         Sprite {
             images: match (raw_image, image_size) {
                 (Some(img), Some((w, h))) => {
-                    let nb_row = img.width() / w as u32;
-                    let nb_col = img.height() / h as u32;
-                    let mut res = vec![vec![0u8; w * h * 4]; nb_row as usize * nb_col as usize];
+                    let nb_row = img.width() as usize / w;
+                    let nb_col = img.height() as usize/ h;
+                    let mut res = vec![vec![0u8; w * h * 4]; nb_row * nb_col];
 
-                    let datas = img.data();
+//                    println!("{}", img.data().len());
 
-                    for i in 0..nb_col {
-                        for j in 0..nb_row {
-                            let offset_w = i as usize * w;
-                            let offset_h = j as usize * h;
-                            for k in 0..w * h * 4 {
-                                let base_index = k % w + img.width() as usize * (k / w);
-                                let final_index = base_index + offset_w + offset_h;
-                                res[i as usize + j as usize * nb_col as usize][k] =
-                                    datas[final_index];
-                            }
-                        }
+                    for i in 0..img.width() as usize * img.height() as usize{
+                        let elem_r = img.data()[i*4];
+                        let elem_g = img.data()[i*4+1];
+                        let elem_b = img.data()[i*4+2];
+                        let elem_a = img.data()[i*4+3];
+
+                        let col = i / w;
+                        let line = col / nb_col;
+                        let row = line / h;
+                        let index = col % nb_col + row * nb_col;
+                        println!("{} {}", col, index);
+                        res[index][i % w] = elem_r;
+                        res[index][i % w + 1] = elem_g;
+                        res[index][i % w+ 2] = elem_b;
+                        res[index][i % w +3] = elem_a;
                     }
-                    console_log!("test");
+
                     res.iter()
-                        .map(|v| Image::from_raw(v.to_vec(), w, h))
+                        .map(|v| Image::from_raw(v.clone(), w, h))
                         .collect()
                 }
                 (Some(img), None) => vec![img],
@@ -65,6 +69,7 @@ impl SpriteBuilder {
     }
 }
 
+#[derive(Debug)]
 pub struct Sprite {
     images: Vec<Image>,
     index: usize,
@@ -85,4 +90,10 @@ impl From<Vec<Image>> for Sprite {
 }
 impl Component for Sprite {
     type Storage = VecStorage<Sprite>;
+}
+
+#[test]
+fn sprite_splitting() {
+    println!("{:?}", SpriteBuilder::new().add_image_from_raw(vec![0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], 2, 2).register_sprite_size(1, 1).build());
+    unimplemented!();
 }
