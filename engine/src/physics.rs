@@ -41,7 +41,11 @@ pub struct RigidBody {
     velocity: Vec2<f64>,
 }
 
-impl RigidBody {}
+impl RigidBody {
+    pub fn impulse(&mut self, pulse: Vec2<f64>) {
+        self.force += pulse;
+    }
+}
 
 impl Component for RigidBody {
     type Storage = DenseVecStorage<Self>;
@@ -58,13 +62,15 @@ impl<'a> System<'a> for PhysicsSystem {
 
     fn run(&mut self, (mut transforms, mut rigid_bodies, mut collisions): Self::SystemData) {
         for (t, r, c) in (&mut transforms, &mut rigid_bodies, &mut collisions).join() {
-            if let Some(v) = c.0.take() {
+            if let Some(v) = (*c).take() {
                 r.acceleration = Vec2::from((0.0, 0.0));
                 r.velocity = Vec2::from((0.0, 0.0));
                 *t.position_mut() += v.at;
             } else {
                 r.acceleration = if r.mass > 0.0 {
-                    r.force / r.mass + *GRAVITY
+                    let force = r.force;
+                    r.force = Vec2::from((0.0, 0.0));
+                    force / r.mass + *GRAVITY
                 } else {
                     Vec2::from((0.0, 0.0))
                 };

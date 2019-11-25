@@ -3,7 +3,7 @@ use engine::specs::prelude::*;
 use engine::{Camera, Image};
 use js_sys::*;
 use lazy_static::*;
-use log::*;
+// use log::*;
 use std::f64;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::{Clamped, JsCast};
@@ -21,7 +21,7 @@ impl<'a> System<'a> for DebugCollider {
         ReadStorage<'a, Collider>,
     );
 
-    fn run(&mut self, (camera, transforms, colliders): Self::SystemData) {
+    fn run(&mut self, (_camera, transforms, colliders): Self::SystemData) {
         let ctx: &Context = &CTX;
 
         for (t, c) in (&transforms, &colliders).join() {
@@ -34,12 +34,13 @@ impl<'a> System<'a> for DebugCollider {
             let pos_x = canvas_center_x + obj_center_x;
             let pos_y = canvas_center_y - obj_center_y;
 
-            match c.0 {
+            match **c {
                 engine::types::ColliderType::Circle(r) => {
                     ctx.draw_circle(pos_x, pos_y, r).unwrap();
                 }
                 engine::types::ColliderType::Rect(w, h) => {
-                    ctx.draw_rect(pos_x - w / 2.0, pos_y - h / 2.0, w, h).unwrap();
+                    ctx.draw_rect(pos_x - w / 2.0, pos_y - h / 2.0, w, h)
+                        .unwrap();
                 }
                 _ => {}
             }
@@ -55,7 +56,7 @@ impl<'a> System<'a> for SysRender {
         ReadStorage<'a, Sprite>,
     );
 
-    fn run(&mut self, (camera, transforms, sprites): Self::SystemData) {
+    fn run(&mut self, (_camera, transforms, sprites): Self::SystemData) {
         let ctx: &Context = &CTX;
         ctx.clear();
 

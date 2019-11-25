@@ -2,8 +2,7 @@ mod draw;
 mod helper;
 
 use engine::specs::prelude::*;
-use engine::specs::prelude::*;
-use engine::{builder::*, components::*, systems::*, types::*};
+use engine::{builder::*, components::*, types::*};
 use helper::{body, request_animation_frame};
 use js_sys::*;
 use log::*;
@@ -13,28 +12,41 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
 #[derive(Default)]
-struct Player;
-struct TestMove;
-
+struct Player {
+    has_jump: bool,
+}
 impl Component for Player {
-    type Storage = NullStorage<Self>;
+    type Storage = DenseVecStorage<Self>;
 }
 
+struct TestMove;
 impl<'a> System<'a> for TestMove {
     type SystemData = (
         Read<'a, engine::KeyPress>,
+        ReadStorage<'a, Collisions>,
         WriteStorage<'a, Transform>,
-        ReadStorage<'a, Player>,
+        WriteStorage<'a, RigidBody>,
+        WriteStorage<'a, Player>,
     );
 
-    fn run(&mut self, (kp, mut transforms, players): Self::SystemData) {
-        for (t, _) in (&mut transforms, &players).join() {
+    fn run(
+        &mut self,
+        (kp, collisions, mut transforms, mut rigidbodies, mut players): Self::SystemData,
+    ) {
+        for (c, t, r, p) in (&collisions, &mut transforms, &mut rigidbodies, &mut players).join() {
             let speed = 2.0;
             if kp.w() {
-                t.translate(engine::math::Vec2::from((0.0, speed)));
+                if c.has_hit_bottom() {
+                    p.has_jump = false;
+                }
+                if !p.has_jump {
+                    r.impulse(engine::math::Vec2::from((0.0, 50.0)));
+                    p.has_jump = true;
+                }
             }
             if kp.s() {
-                t.translate(engine::math::Vec2::from((0.0, -speed)));
+                // t.translate(engine::math::Vec2::from((0.0, -speed)));
+                // r.impulse(engine::math::Vec2::from((0.0, -100.0)));
             }
             if kp.d() {
                 t.translate(engine::math::Vec2::from((speed, 0.0)));
@@ -130,7 +142,7 @@ fn init(world: &mut World) {
     world
         .create_entity()
         .with(Transform::default())
-        .with(RigidBodyBuilder::new().set_mass(0.0).build())
+        .with(RigidBodyBuilder::new().set_mass(10.0).build())
         .with(
             ColliderBuilder::new()
                 // .collider_type(ColliderType::Circle(25.0))
@@ -143,6 +155,6 @@ fn init(world: &mut World) {
             50,
             50,
         )]))
-        .with(Player)
+        .with(Player::default())
         .build();
 }

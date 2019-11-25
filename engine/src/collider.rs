@@ -1,6 +1,7 @@
 use crate::physics::RigidBody;
 use crate::transform::Transform;
-use log::*;
+use std::ops::{Deref, DerefMut};
+// use log::*;
 use math::Vec2;
 use specs::prelude::*;
 
@@ -164,14 +165,44 @@ pub struct Collision {
     pub at: Vec2<f64>,
 }
 
-pub struct Collider(pub ColliderType);
+pub struct Collider(ColliderType);
 impl Component for Collider {
     type Storage = DenseVecStorage<Self>;
 }
+impl Deref for Collider {
+    type Target = ColliderType;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+impl DerefMut for Collider {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
 #[derive(Default)]
-pub struct Collisions(pub Option<Collision>);
+pub struct Collisions(Option<Collision>, bool);
+impl Collisions {
+    pub fn has_hit_bottom(&self) -> bool {
+        self.1
+    }
+}
 impl Component for Collisions {
     type Storage = DenseVecStorage<Self>;
+}
+impl Deref for Collisions {
+    type Target = Option<Collision>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+impl DerefMut for Collisions {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
 }
 
 pub struct CollideSystem;
@@ -197,13 +228,15 @@ impl<'a> System<'a> for CollideSystem {
         )
             .join()
         {
+            c.1 = false;
             for (e2, c2, t2) in (&entities, &colliders, &transforms).join() {
                 if e != e2 {
                     if let Some(v) =
                         c1.0.collide_with(&c2.0, t.position().clone(), t2.position().clone())
                     {
-                        // console_log!("{:?} {:?} {:?}", v, t.position(), t2.position());
-                        // pause();
+                        if *v.y() > 0.0f64 {
+                            c.1 = true;
+                        }
                         c.0 = Some(Collision { with: e2, at: v });
                     }
                 }

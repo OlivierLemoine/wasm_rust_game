@@ -8,7 +8,6 @@ macro_rules! generate_kp {
         impl KeyPress {
             pub fn update_from_str(&mut self, val: &str, new_val: bool) {
                 match val {
-                    "w" => self.w = new_val,
                     $(stringify!{$key} => self.$key = new_val,)*
                     _ => {}
                 }
