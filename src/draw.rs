@@ -110,9 +110,6 @@ impl Context {
         let canvas: web_sys::HtmlCanvasElement =
             canvas.dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
 
-        let width = canvas.width() as usize;
-        let height = canvas.height() as usize;
-
         let ctx = canvas
             .get_context("2d")?
             .ok_or(JsValue::from(Error::new("No context")))?

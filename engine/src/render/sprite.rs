@@ -98,8 +98,10 @@ impl Sprite {
 }
 impl From<Vec<Image>> for Sprite {
     fn from(images: Vec<Image>) -> Self {
+        let mut animations = BTreeMap::new();
+        animations.insert(String::from(""), Animation::from(images));
         Sprite {
-            animations: BTreeMap::new(),
+            animations,
             curr_animation: "".into(),
         }
     }
