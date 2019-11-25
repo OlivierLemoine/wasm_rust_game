@@ -1,6 +1,6 @@
 use super::color::Color;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Image {
     data: Vec<u8>,
     width: usize,

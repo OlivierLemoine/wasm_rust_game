@@ -158,6 +158,7 @@ fn init(world: &mut World, player_image: engine::Image) {
             SpriteBuilder::new()
                 .add_image(player_image)
                 .register_sprite_size(32, 32)
+                .add_anim_desc(vec![("".into(), 4, (0..8).collect())])
                 .build(),
         )
         .with(Player::default())

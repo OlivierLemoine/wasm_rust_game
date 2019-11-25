@@ -7,13 +7,19 @@ use std::collections::BTreeMap;
 pub struct SpriteBuilder {
     raw_image: Option<Image>,
     image_size: Option<(usize, usize)>,
+    anim_index: Option<Vec<(String, u32, Vec<usize>)>>,
 }
 impl SpriteBuilder {
     pub fn new() -> Self {
         SpriteBuilder {
             raw_image: None,
             image_size: None,
+            anim_index: None,
         }
+    }
+    pub fn add_anim_desc(mut self, anim_index: Vec<(String, u32, Vec<usize>)>) -> Self {
+        self.anim_index = Some(anim_index);
+        self
     }
     pub fn add_image_from_raw(mut self, data: Vec<u8>, width: usize, height: usize) -> Self {
         self.raw_image = Some(Image::from_raw(data, width, height));
@@ -31,6 +37,7 @@ impl SpriteBuilder {
         let SpriteBuilder {
             raw_image,
             image_size,
+            anim_index,
         } = self;
 
         let sprites: Vec<_> = match (raw_image, image_size) {
@@ -77,7 +84,25 @@ impl SpriteBuilder {
 
         let mut tree = BTreeMap::new();
 
-        tree.insert(String::from(""), sprites.into());
+        if let Some(v) = anim_index {
+            for (name, length, desc) in v {
+                let mut imgs = Vec::new();
+
+                for i in desc {
+                    imgs.push(sprites[i].clone());
+                }
+
+                let mut anim = Animation::from(imgs);
+                anim.change_length(length);
+                tree.insert(name, anim);
+            }
+        } else {
+            tree.insert(String::from(""), Animation::from(sprites));
+        }
+        // let mut anim = Animation::from(sprites);
+        // anim.change_length(4);
+
+        // tree.insert(String::from(""), anim);
 
         Sprite {
             animations: tree,
@@ -92,8 +117,13 @@ pub struct Sprite {
     curr_animation: String,
 }
 impl Sprite {
-    pub fn image(&self) -> &Image {
-        self.animations.get(&self.curr_animation).unwrap().get()
+    pub fn image(&self) -> Option<&Image> {
+        self.animations.get(&self.curr_animation).map(|v| v.get())
+    }
+    pub fn update(&mut self) {
+        self.animations
+            .get_mut(&self.curr_animation)
+            .map(|v| v.update());
     }
 }
 impl From<Vec<Image>> for Sprite {
@@ -108,6 +138,18 @@ impl From<Vec<Image>> for Sprite {
 }
 impl Component for Sprite {
     type Storage = VecStorage<Sprite>;
+}
+
+pub struct SpriteUpdaterSystem;
+
+impl<'a> System<'a> for SpriteUpdaterSystem {
+    type SystemData = WriteStorage<'a, Sprite>;
+
+    fn run(&mut self, mut sprites: Self::SystemData) {
+        for s in (&mut sprites).join() {
+            s.update();
+        }
+    }
 }
 
 #[test]

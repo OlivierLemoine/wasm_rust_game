@@ -20,9 +20,6 @@ pub mod components {
     pub use crate::render::sprite::Sprite;
     pub use crate::transform::Transform;
 }
-pub mod systems {
-    pub use crate::physics::PhysicsSystem;
-}
 pub use camera::Camera;
 pub use event::KeyPress;
 pub use math;
@@ -35,6 +32,7 @@ pub struct Game {
     pub world: specs::shred::World,
     physics: physics::PhysicsSystem,
     collider: collider::CollideSystem,
+    sprite: render::sprite::SpriteUpdaterSystem,
 }
 
 impl Game {
@@ -50,19 +48,23 @@ impl Game {
 
         let mut physics = physics::PhysicsSystem;
         let mut collider = collider::CollideSystem;
+        let mut sprite = render::sprite::SpriteUpdaterSystem;
 
         specs::shred::RunNow::setup(&mut physics, &mut world);
         specs::shred::RunNow::setup(&mut collider, &mut world);
+        specs::shred::RunNow::setup(&mut sprite, &mut world);
 
         Game {
             world,
             physics,
             collider,
+            sprite,
         }
     }
 
     pub fn run_sys(&mut self) {
         self.collider.run_now(&mut self.world);
         self.physics.run_now(&mut self.world);
+        self.sprite.run_now(&mut self.world);
     }
 }
