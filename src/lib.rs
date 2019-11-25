@@ -10,6 +10,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
+use web_sys::ImageData;
 
 #[derive(Default)]
 struct Player {
@@ -59,10 +60,15 @@ impl<'a> System<'a> for TestMove {
 }
 
 #[wasm_bindgen]
-pub fn start() -> Result<(), JsValue> {
+pub fn start(player_image: ImageData) -> Result<(), JsValue> {
+    let player_image = engine::Image::from_raw(
+        player_image.data().to_vec(),
+        player_image.width() as usize,
+        player_image.height() as usize,
+    );
     let mut game = engine::Game::new();
     game.world.register::<Player>();
-    init(&mut game.world);
+    init(&mut game.world, player_image);
 
     let closure = Rc::new(RefCell::new(None));
     let imediate_closure = closure.clone();
@@ -118,7 +124,7 @@ pub fn start() -> Result<(), JsValue> {
     Ok(())
 }
 
-fn init(world: &mut World) {
+fn init(world: &mut World, player_image: engine::Image) {
     world
         .create_entity()
         .with(
@@ -150,11 +156,7 @@ fn init(world: &mut World) {
                 .build(),
         )
         .with(Collisions::default())
-        .with(Sprite::from(vec![engine::Image::rec(
-            engine::Color::red(),
-            50,
-            50,
-        )]))
+        .with(SpriteBuilder::new().add_image(player_image).build())
         .with(Player::default())
         .build();
 }

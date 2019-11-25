@@ -23,9 +23,27 @@
                 canvas.width = document.body.clientWidth;
                 canvas.height = document.body.clientHeight;
 
+                // let img = await (await fetch('./statics/player.png')).blob();
+                // console.log(URL.createObjectURL(img));
+
+                let img = new Image();
+
+                await new Promise((resolve, reject) => {
+                    img.onload = () => resolve();
+                    img.src = './statics/player.png';
+                });
+                let tmpCanvas = document.createElement('canvas');
+                tmpCanvas.width = img.width;
+                tmpCanvas.height = img.height;
+                let tmpCtx = tmpCanvas.getContext('2d');
+                tmpCtx.drawImage(img, 0, 0);
+                let data = tmpCtx.getImageData(0, 0, img.width, img.height);
+
+                // data.
+
                 await init();
                 resize();
-                start();
+                start(data);
 
                 window.addEventListener('resize', () => {
                     canvas.width = document.body.clientWidth;

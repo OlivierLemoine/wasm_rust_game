@@ -11,6 +11,7 @@ pub mod types {
 pub mod builder {
     pub use crate::collider::ColliderBuilder;
     pub use crate::physics::RigidBodyBuilder;
+    pub use crate::render::sprite::SpriteBuilder;
     pub use crate::transform::TransformBuilder;
 }
 pub mod components {
