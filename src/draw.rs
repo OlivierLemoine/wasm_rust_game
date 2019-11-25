@@ -3,7 +3,7 @@ use engine::specs::prelude::*;
 use engine::{Camera, Image};
 use js_sys::*;
 use lazy_static::*;
-// use log::*;
+use log::*;
 use std::f64;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::{Clamped, JsCast};
@@ -122,11 +122,23 @@ impl Context {
     }
 
     pub fn draw(&self, img: &Image, pos_x: u32, pos_y: u32) -> Result<(), JsValue> {
-        let data = ImageData::new_with_u8_clamped_array_and_sh(
-            Clamped(&mut img.data().clone()),
-            img.width(),
-            img.height(),
-        )?;
+        let data =
+            ImageData::new_with_u8_clamped_array(Clamped(&mut img.data().clone()), img.width());
+        let data = match data {
+            Ok(x) => x,
+            Err(e) => {
+                console_log!(
+                    "{} {} {} {} {:?}",
+                    img.width(),
+                    img.height(),
+                    img.width() * img.height(),
+                    img.data().len(),
+                    e
+                );
+                pause();
+                panic!();
+            }
+        };
         self.ctx.put_image_data(&data, pos_x as f64, pos_y as f64)?;
         Ok(())
     }

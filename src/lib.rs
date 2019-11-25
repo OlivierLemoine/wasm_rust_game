@@ -134,7 +134,6 @@ fn init(world: &mut World, player_image: engine::Image) {
         )
         .with(
             ColliderBuilder::new()
-                // .collider_type(ColliderType::Circle(15.0))
                 .collider_type(ColliderType::Rect(100.0, 30.0))
                 .build(),
         )
@@ -151,12 +150,16 @@ fn init(world: &mut World, player_image: engine::Image) {
         .with(RigidBodyBuilder::new().set_mass(10.0).build())
         .with(
             ColliderBuilder::new()
-                // .collider_type(ColliderType::Circle(25.0))
-                .collider_type(ColliderType::Rect(50.0, 50.0))
+                .collider_type(ColliderType::Rect(32.0, 32.0))
                 .build(),
         )
         .with(Collisions::default())
-        .with(SpriteBuilder::new().add_image(player_image).build())
+        .with(
+            SpriteBuilder::new()
+                .add_image(player_image)
+                .register_sprite_size(32, 32)
+                .build(),
+        )
         .with(Player::default())
         .build();
 }
