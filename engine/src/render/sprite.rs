@@ -38,23 +38,31 @@ impl SpriteBuilder {
                     let nb_col = img.height() as usize/ h;
                     let mut res = vec![vec![0u8; w * h * 4]; nb_row * nb_col];
 
-//                    println!("{}", img.data().len());
+                    for i in (0..img.width() as usize * img.height() as usize * 4).step_by(4){
+                        let color_r = img.data()[i];
+                        let color_g = img.data()[i+1];
+                        let color_b = img.data()[i+2];
+                        let color_a = img.data()[i+3];
 
-                    for i in 0..img.width() as usize * img.height() as usize{
-                        let elem_r = img.data()[i*4];
-                        let elem_g = img.data()[i*4+1];
-                        let elem_b = img.data()[i*4+2];
-                        let elem_a = img.data()[i*4+3];
+                        let pixel_index = i / 4;
 
-                        let col = i / w;
-                        let line = col / nb_col;
-                        let row = line / h;
-                        let index = col % nb_col + row * nb_col;
-                        println!("{} {}", col, index);
-                        res[index][i % w] = elem_r;
-                        res[index][i % w + 1] = elem_g;
-                        res[index][i % w+ 2] = elem_b;
-                        res[index][i % w +3] = elem_a;
+                        let global_pixel_x = pixel_index % img.width() as usize;
+                        let global_pixel_y = pixel_index / img.width() as usize;
+
+                        let sub_image_x = global_pixel_x / w;
+                        let sub_image_y = global_pixel_y / h;
+
+                        let index_sub_image = sub_image_x + sub_image_y * nb_col;
+
+                        let local_pixel_x = global_pixel_x % w;
+                        let local_pixel_y = global_pixel_y % h;
+                        
+                        let local_index_pixel = local_pixel_x + local_pixel_y * w;
+
+                        res[index_sub_image][local_index_pixel] = color_r;
+                        res[index_sub_image][local_index_pixel + 1] = color_g;
+                        res[index_sub_image][local_index_pixel + 2] = color_b;
+                        res[index_sub_image][local_index_pixel + 3] = color_a;
                     }
 
                     res.iter()
