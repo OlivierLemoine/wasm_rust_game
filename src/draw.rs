@@ -166,41 +166,6 @@ impl Context {
         self.ctx.stroke();
         Ok(())
     }
-
-    pub fn clear(&self) {
-        self.ctx.clear_rect(
-            0.0,
-            0.0,
-            unsafe { CANVAS_WIDTH } as f64,
-            unsafe { CANVAS_HEIGHT } as f64,
-        );
-    }
-}
-
-struct ImgData<'a>(&'a Vec<u8>);
-
-impl<'a> ImgData<'a> {
-    fn get(&self) -> Vec<u8> {
-        self.0.clone()
-    }
-    fn flip_horizontaly(&self, width: usize) -> Vec<u8> {
-        let mut res = vec![0u8; self.0.len()];
-
-        let pivot_width = width - 1;
-
-        for i in (0..self.0.len()).step_by(4) {
-            let new_i = i / 4;
-            let index_x = new_i % width;
-            let index_y = new_i / width;
-            let swaped_index_x = pivot_width - index_x;
-            let index = swaped_index_x + index_y * width;
-            res[index * 4] = self.0[i];
-            res[index * 4 + 1] = self.0[i + 1];
-            res[index * 4 + 2] = self.0[i + 2];
-            res[index * 4 + 3] = self.0[i + 3];
-        }
-        res
-    }
 }
 
 struct ImgToDraw(Vec<u8>, usize, usize);
