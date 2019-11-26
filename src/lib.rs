@@ -17,6 +17,7 @@ enum AnimationState {
     Idle,
     Walk,
     Jump,
+    Attack,
 }
 impl Default for AnimationState {
     fn default() -> Self {
@@ -29,6 +30,7 @@ impl AnimationState {
             AnimationState::Idle => String::from("idle"),
             AnimationState::Walk => String::from("walk"),
             AnimationState::Jump => String::from("jump"),
+            AnimationState::Attack => String::from("attack"),
         }
     }
 }
@@ -68,30 +70,33 @@ impl<'a> System<'a> for TestMove {
         {
             let speed = if !kp.ShiftLeft() { 2.0 } else { 1.0 };
             let mut new_player_anim_state = AnimationState::Idle;
-            t.face_right();
 
-            if kp.Space() {
-                if c.has_hit_bottom() {
-                    p.has_jump = false;
+            if kp.KeyK() {
+                new_player_anim_state = AnimationState::Attack;
+            } else {
+                if kp.Space() {
+                    if c.has_hit_bottom() {
+                        p.has_jump = false;
+                    }
+                    if !p.has_jump {
+                        r.impulse(engine::math::Vec2::from((0.0, 50.0)));
+                        p.has_jump = true;
+                    }
                 }
-                if !p.has_jump {
-                    r.impulse(engine::math::Vec2::from((0.0, 50.0)));
-                    p.has_jump = true;
+                if kp.KeyD() {
+                    new_player_anim_state = AnimationState::Walk;
+                    t.translate(engine::math::Vec2::from((speed, 0.0)));
+                    t.face_right();
                 }
-            }
-            if kp.KeyD() {
-                new_player_anim_state = AnimationState::Walk;
-                t.translate(engine::math::Vec2::from((speed, 0.0)));
-            }
-            if kp.KeyA() {
-                new_player_anim_state = AnimationState::Walk;
-                t.translate(engine::math::Vec2::from((-speed, 0.0)));
-                t.face_left();
+                if kp.KeyA() {
+                    new_player_anim_state = AnimationState::Walk;
+                    t.translate(engine::math::Vec2::from((-speed, 0.0)));
+                    t.face_left();
+                }
             }
 
             if new_player_anim_state != p.animation_state {
                 s.animation(new_player_anim_state.to_string());
-
                 p.animation_state = new_player_anim_state;
             }
         }
@@ -148,7 +153,7 @@ pub fn start(player_image: ImageData) -> Result<(), JsValue> {
         mover.run_now(&mut g.world);
         g.run_sys();
         renderer.run_now(&mut g.world);
-        deb.run_now(&mut g.world);
+        // deb.run_now(&mut g.world);
 
         request_animation_frame(closure.borrow().as_ref().unwrap()).unwrap();
     }) as Box<dyn FnMut()>));
@@ -186,6 +191,7 @@ fn init(world: &mut World, player_image: engine::Image) {
                 .apply_transparancy_on(engine::Color(0, 0, 0, 0))
                 .register_sprite_size(32, 32)
                 .add_anim_desc(vec![
+                    ("attack".into(), 100, (26..36).collect()),
                     ("idle".into(), 4, (0..13).collect()),
                     ("walk".into(), 4, (13..21).collect()),
                     ("jump".into(), 4, (65..71).collect()),
