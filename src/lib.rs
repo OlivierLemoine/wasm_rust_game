@@ -146,8 +146,8 @@ pub fn start(player_image: ImageData) -> Result<(), JsValue> {
 
     *imediate_closure.borrow_mut() = Some(Closure::wrap(Box::new(move || {
         let mut g = game.borrow_mut();
-        g.run_sys();
         mover.run_now(&mut g.world);
+        g.run_sys();
         renderer.run_now(&mut g.world);
         deb.run_now(&mut g.world);
 
