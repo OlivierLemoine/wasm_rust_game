@@ -1,8 +1,12 @@
+#![allow(non_snake_case)]
+
 macro_rules! generate_kp {
     ($($key: ident),*) => {
         #[derive(Default)]
         pub struct KeyPress {
-            $($key: bool,)*
+            $(
+                $key: bool,
+            )*
         }
 
         impl KeyPress {
@@ -22,4 +26,4 @@ macro_rules! generate_kp {
     };
 }
 
-generate_kp!(w, a, s, d);
+generate_kp!(KeyA, KeyD, Space, ShiftLeft);

@@ -1,4 +1,3 @@
-use super::collider::Collisions;
 use super::transform::Transform;
 use lazy_static::*;
 use math::Vec2;

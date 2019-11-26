@@ -5,7 +5,7 @@ use engine::specs::prelude::*;
 use engine::{builder::*, components::*, types::*};
 use helper::{body, request_animation_frame};
 use js_sys::*;
-use log::*;
+// use log::*;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
@@ -66,11 +66,11 @@ impl<'a> System<'a> for TestMove {
         )
             .join()
         {
-            let speed = 2.0;
+            let speed = if !kp.ShiftLeft() { 2.0 } else { 1.0 };
             let mut new_player_anim_state = AnimationState::Idle;
             t.face_right();
 
-            if kp.w() {
+            if kp.Space() {
                 if c.has_hit_bottom() {
                     p.has_jump = false;
                 }
@@ -79,12 +79,11 @@ impl<'a> System<'a> for TestMove {
                     p.has_jump = true;
                 }
             }
-            if kp.s() {}
-            if kp.d() {
+            if kp.KeyD() {
                 new_player_anim_state = AnimationState::Walk;
                 t.translate(engine::math::Vec2::from((speed, 0.0)));
             }
-            if kp.a() {
+            if kp.KeyA() {
                 new_player_anim_state = AnimationState::Walk;
                 t.translate(engine::math::Vec2::from((-speed, 0.0)));
                 t.face_left();
@@ -126,7 +125,7 @@ pub fn start(player_image: ImageData) -> Result<(), JsValue> {
         let closure = Closure::wrap(Box::new(move |ev: web_sys::KeyboardEvent| {
             let mut w: std::cell::RefMut<engine::Game> = game_ev_kd.borrow_mut();
             let kp: &mut engine::KeyPress = w.world.get_mut().unwrap();
-            kp.update_from_str(ev.key().as_str(), true);
+            kp.update_from_str(ev.code().as_str(), true);
         }) as Box<dyn FnMut(_)>);
 
         body()?.add_event_listener_with_callback("keydown", closure.as_ref().unchecked_ref())?;
@@ -137,7 +136,7 @@ pub fn start(player_image: ImageData) -> Result<(), JsValue> {
         let closure = Closure::wrap(Box::new(move |ev: web_sys::KeyboardEvent| {
             let mut w: std::cell::RefMut<engine::Game> = game_ev_ku.borrow_mut();
             let kp: &mut engine::KeyPress = w.world.get_mut().unwrap();
-            kp.update_from_str(ev.key().as_str(), false);
+            kp.update_from_str(ev.code().as_str(), false);
         }) as Box<dyn FnMut(_)>);
 
         body()?.add_event_listener_with_callback("keyup", closure.as_ref().unchecked_ref())?;
@@ -149,7 +148,7 @@ pub fn start(player_image: ImageData) -> Result<(), JsValue> {
         mover.run_now(&mut g.world);
         g.run_sys();
         renderer.run_now(&mut g.world);
-        // deb.run_now(&mut g.world);
+        deb.run_now(&mut g.world);
 
         request_animation_frame(closure.borrow().as_ref().unwrap()).unwrap();
     }) as Box<dyn FnMut()>));
@@ -170,6 +169,7 @@ fn init(world: &mut World, player_image: engine::Image) {
     create_block_on_grid(world, -5, -3, 0, -5);
     create_block_on_grid(world, -3, 7, -4, -5);
     create_block_on_grid(world, 6, 7, -3, -4);
+    create_block_on_grid(world, 0, 1, 0, -1);
     world
         .create_entity()
         .with(Transform::default())
