@@ -47,6 +47,8 @@ impl<'a> System<'a> for TestMove {
         {
             let speed = 2.0;
             let mut new_player_walking_state = false;
+            t.face_right();
+
             if kp.w() {
                 if c.has_hit_bottom() {
                     p.has_jump = false;
@@ -67,6 +69,7 @@ impl<'a> System<'a> for TestMove {
             if kp.a() {
                 new_player_walking_state = true;
                 t.translate(engine::math::Vec2::from((-speed, 0.0)));
+                t.face_left();
             }
 
             if new_player_walking_state != p.is_walking {

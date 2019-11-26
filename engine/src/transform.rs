@@ -49,17 +49,27 @@ impl TransformBuilder {
             },
             scale: match scale {
                 Some(v) => v,
-                None => Vec2::default(),
+                None => Vec2::from((1.0, 1.0)),
             },
         }
     }
 }
 
-#[derive(Default, Debug)]
+#[derive(Debug)]
 pub struct Transform {
     position: Vec2<f64>,
     rotation: f64,
     scale: Vec2<f64>,
+}
+
+impl Default for Transform {
+    fn default() -> Self {
+        Transform {
+            position: Vec2::default(),
+            rotation: 0.0,
+            scale: Vec2::from((1.0, 1.0)),
+        }
+    }
 }
 
 impl Transform {
@@ -96,7 +106,7 @@ impl Transform {
     }
 
     pub fn face_right(&mut self) {
-        if *self.scale.y() < 0.0 {
+        if *self.scale.x() < 0.0 {
             self.flip_side();
         }
     }

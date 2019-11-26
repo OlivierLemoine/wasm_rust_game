@@ -91,12 +91,23 @@ impl<'a> System<'a> for SysRender {
                 let obj_center_y = *t.position().y() as i32;
 
                 let obj_scale_x = *t.scale().x() as i32;
-                let obj_scale_y = *t.scale().y() as i32;
+                // let obj_scale_y = *t.scale().y() as i32;
 
                 let pos_x = canvas_center_x - image_center_x + obj_center_x;
                 let pos_y = canvas_center_y - image_center_y - obj_center_y;
 
-                ctx.draw(img, pos_x as u32, pos_y as u32).unwrap();
+                // console_log!("{}", obj_scale_x);
+
+                let data = ImgData(img.data());
+                let mut data = if obj_scale_x < 0 {
+                    data.flip_horizontaly(img.width() as usize)
+                } else {
+                    data.get()
+                };
+                let width = img.width();
+
+                ctx.draw(&mut data, width, pos_x as u32, pos_y as u32)
+                    .unwrap();
             }
         }
     }
@@ -123,24 +134,14 @@ impl Context {
         Ok(Context { ctx })
     }
 
-    pub fn draw(&self, img: &Image, pos_x: u32, pos_y: u32) -> Result<(), JsValue> {
-        let data =
-            ImageData::new_with_u8_clamped_array(Clamped(&mut img.data().clone()), img.width());
-        let data = match data {
-            Ok(x) => x,
-            Err(e) => {
-                console_log!(
-                    "{} {} {} {} {:?}",
-                    img.width(),
-                    img.height(),
-                    img.width() * img.height(),
-                    img.data().len(),
-                    e
-                );
-                pause();
-                panic!();
-            }
-        };
+    pub fn draw(
+        &self,
+        img: &mut Vec<u8>,
+        width: u32,
+        pos_x: u32,
+        pos_y: u32,
+    ) -> Result<(), JsValue> {
+        let data = ImageData::new_with_u8_clamped_array(Clamped(img), width)?;
         self.ctx.put_image_data(&data, pos_x as f64, pos_y as f64)?;
         Ok(())
     }
@@ -168,5 +169,31 @@ impl Context {
             unsafe { canvas_width } as f64,
             unsafe { canvas_height } as f64,
         );
+    }
+}
+
+struct ImgData<'a>(&'a Vec<u8>);
+
+impl<'a> ImgData<'a> {
+    fn get(&self) -> Vec<u8> {
+        self.0.clone()
+    }
+    fn flip_horizontaly(&self, width: usize) -> Vec<u8> {
+        let mut res = vec![0u8; self.0.len()];
+
+        let pivot_width = width - 1;
+
+        for i in (0..self.0.len()).step_by(4) {
+            let new_i = i / 4;
+            let index_x = new_i % width;
+            let index_y = new_i / width;
+            let swaped_index_x = pivot_width - index_x;
+            let index = swaped_index_x + index_y * width;
+            res[index * 4] = self.0[i];
+            res[index * 4 + 1] = self.0[i + 1];
+            res[index * 4 + 2] = self.0[i + 2];
+            res[index * 4 + 3] = self.0[i + 3];
+        }
+        res
     }
 }
