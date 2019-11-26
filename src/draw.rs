@@ -83,12 +83,19 @@ impl<'a> System<'a> for SysRender {
             if let Some(img) = s.image() {
                 let image_center_x = img.width() as i32 / 2;
                 let image_center_y = img.height() as i32 / 2;
+
                 let canvas_center_x = unsafe { canvas_width } as i32 / 2;
                 let canvas_center_y = unsafe { canvas_height } as i32 / 2;
+
                 let obj_center_x = *t.position().x() as i32;
                 let obj_center_y = *t.position().y() as i32;
+
+                let obj_scale_x = *t.scale().x() as i32;
+                let obj_scale_y = *t.scale().y() as i32;
+
                 let pos_x = canvas_center_x - image_center_x + obj_center_x;
                 let pos_y = canvas_center_y - image_center_y - obj_center_y;
+
                 ctx.draw(img, pos_x as u32, pos_y as u32).unwrap();
             }
         }

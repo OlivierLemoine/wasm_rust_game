@@ -120,6 +120,9 @@ impl Sprite {
     pub fn image(&self) -> Option<&Image> {
         self.animations.get(&self.curr_animation).map(|v| v.get())
     }
+    pub fn animation(&mut self, anim: String) {
+        self.curr_animation = anim;
+    }
     pub fn update(&mut self) {
         self.animations
             .get_mut(&self.curr_animation)

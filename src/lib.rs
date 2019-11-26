@@ -15,6 +15,7 @@ use web_sys::ImageData;
 #[derive(Default)]
 struct Player {
     has_jump: bool,
+    is_walking: bool,
 }
 impl Component for Player {
     type Storage = DenseVecStorage<Self>;
@@ -28,14 +29,24 @@ impl<'a> System<'a> for TestMove {
         WriteStorage<'a, Transform>,
         WriteStorage<'a, RigidBody>,
         WriteStorage<'a, Player>,
+        WriteStorage<'a, Sprite>,
     );
 
     fn run(
         &mut self,
-        (kp, collisions, mut transforms, mut rigidbodies, mut players): Self::SystemData,
+        (kp, collisions, mut transforms, mut rigidbodies, mut players, mut sprites): Self::SystemData,
     ) {
-        for (c, t, r, p) in (&collisions, &mut transforms, &mut rigidbodies, &mut players).join() {
+        for (c, t, r, p, s) in (
+            &collisions,
+            &mut transforms,
+            &mut rigidbodies,
+            &mut players,
+            &mut sprites,
+        )
+            .join()
+        {
             let speed = 2.0;
+            let mut new_player_walking_state = false;
             if kp.w() {
                 if c.has_hit_bottom() {
                     p.has_jump = false;
@@ -50,10 +61,22 @@ impl<'a> System<'a> for TestMove {
                 // r.impulse(engine::math::Vec2::from((0.0, -100.0)));
             }
             if kp.d() {
+                new_player_walking_state = true;
                 t.translate(engine::math::Vec2::from((speed, 0.0)));
             }
             if kp.a() {
+                new_player_walking_state = true;
                 t.translate(engine::math::Vec2::from((-speed, 0.0)));
+            }
+
+            if new_player_walking_state != p.is_walking {
+                s.animation(if new_player_walking_state {
+                    "walk".into()
+                } else {
+                    "idle".into()
+                });
+
+                p.is_walking = new_player_walking_state;
             }
         }
     }
@@ -158,7 +181,10 @@ fn init(world: &mut World, player_image: engine::Image) {
             SpriteBuilder::new()
                 .add_image(player_image)
                 .register_sprite_size(32, 32)
-                .add_anim_desc(vec![("idle".into(), 4, (0..13).collect())])
+                .add_anim_desc(vec![
+                    ("idle".into(), 4, (0..13).collect()),
+                    ("walk".into(), 4, (13..21).collect()),
+                ])
                 .build(),
         )
         .with(Player::default())

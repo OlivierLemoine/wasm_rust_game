@@ -35,9 +35,14 @@ impl<T> Vec2<T> {
     pub fn x(&self) -> &T {
         &self.0
     }
-
     pub fn y(&self) -> &T {
         &self.1
+    }
+    pub fn x_mut(&mut self) -> &mut T {
+        &mut self.0
+    }
+    pub fn y_mut(&mut self) -> &mut T {
+        &mut self.1
     }
 }
 
