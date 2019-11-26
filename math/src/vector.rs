@@ -13,6 +13,10 @@ impl<T> Vec2<T> {
     {
         self.0 * self.0 + self.1 * self.1
     }
+
+    pub fn break_self(self) -> (T, T) {
+        (self.0, self.1)
+    }
 }
 
 impl Vec2<f64> {

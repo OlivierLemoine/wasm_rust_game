@@ -77,16 +77,12 @@ impl ColliderType {
                 ]
                 .iter()
                 .map(|(x, y)| {
-                    println!("{} < {} < {}", b2_x_min, x, b2_x_max);
                     if b2_x_min < *x && *x < b2_x_max && b2_y_min < *y && *y < b2_y_max {
                         let v1 = min_abs!(x - b2_x_min, x - b2_x_max);
                         let v2 = min_abs!(y - b2_y_min, y - b2_y_max);
-                        println!("{} {}", v1, v2);
                         if v2 == 0.0 || v1 != 0.0 && v1.abs() < v2.abs() {
-                            // println!("oui");
                             Some(Vec2::from((-v1, 0.0)))
                         } else {
-                            // println!("non");
                             Some(Vec2::from((0.0, -v2)))
                         }
                     } else {
@@ -104,7 +100,6 @@ impl ColliderType {
                     ]
                     .iter()
                     .map(|(x, y)| {
-                        // println!("{} < {} < {}", b1_x_min, x, b1_x_max);
                         if b1_x_min < *x && *x < b1_x_max && b1_y_min < *y && *y < b1_y_max {
                             let v1 = min_abs!(x - b1_x_min, x - b1_x_max);
                             let v2 = min_abs!(y - b1_y_min, y - b1_y_max);

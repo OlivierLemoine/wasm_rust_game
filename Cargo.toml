@@ -4,7 +4,8 @@ version = "0.1.0"
 authors = ["Olivier Lemoine <olivier@le-moine.fr>"]
 edition = "2018"
 description = ""
-repository = ""
+repository = "https://github.com/OlivierLemoine/wasm_rust_game"
+license = "./LICENSE"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
