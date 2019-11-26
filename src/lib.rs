@@ -5,40 +5,51 @@ use engine::specs::prelude::*;
 use engine::{builder::*, components::*, types::*};
 use helper::{body, request_animation_frame};
 use js_sys::*;
-// use log::*;
+use log::*;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::ImageData;
 
-#[derive(PartialEq)]
-enum AnimationState {
+#[derive(Clone)]
+enum PlayerState {
     Idle,
     Walk,
     Jump,
-    Attack,
+    Attack(i32),
 }
-impl Default for AnimationState {
-    fn default() -> Self {
-        AnimationState::Idle
+impl PartialEq for PlayerState {
+    fn eq(&self, other: &PlayerState) -> bool {
+        match (self, other) {
+            (PlayerState::Idle, PlayerState::Idle) => true,
+            (PlayerState::Walk, PlayerState::Walk) => true,
+            (PlayerState::Jump, PlayerState::Jump) => true,
+            (PlayerState::Attack(_), PlayerState::Attack(_)) => true,
+            (_, _) => false,
+        }
     }
 }
-impl AnimationState {
+impl Default for PlayerState {
+    fn default() -> Self {
+        PlayerState::Idle
+    }
+}
+impl PlayerState {
     pub fn to_string(&self) -> String {
         match self {
-            AnimationState::Idle => String::from("idle"),
-            AnimationState::Walk => String::from("walk"),
-            AnimationState::Jump => String::from("jump"),
-            AnimationState::Attack => String::from("attack"),
+            PlayerState::Idle => String::from("idle"),
+            PlayerState::Walk => String::from("walk"),
+            PlayerState::Jump => String::from("jump"),
+            PlayerState::Attack(_) => String::from("attack"),
         }
     }
 }
 
 #[derive(Default)]
 struct Player {
-    has_jump: bool,
-    animation_state: AnimationState,
+    // has_jump: bool,
+    state: PlayerState,
 }
 impl Component for Player {
     type Storage = DenseVecStorage<Self>;
@@ -69,35 +80,71 @@ impl<'a> System<'a> for TestMove {
             .join()
         {
             let speed = if !kp.ShiftLeft() { 2.0 } else { 1.0 };
-            let mut new_player_anim_state = AnimationState::Idle;
+            let mut new_player_state = p.state.clone();
 
-            if kp.KeyK() {
-                new_player_anim_state = AnimationState::Attack;
-            } else {
-                if kp.Space() {
-                    if c.has_hit_bottom() {
-                        p.has_jump = false;
+            match &mut p.state {
+                PlayerState::Idle | PlayerState::Walk => {
+                    if kp.KeyD() {
+                        new_player_state = PlayerState::Walk;
+                        t.translate(engine::math::Vec2::from((speed, 0.0)));
+                        t.face_right();
                     }
-                    if !p.has_jump {
+                    if kp.KeyA() {
+                        new_player_state = PlayerState::Walk;
+                        t.translate(engine::math::Vec2::from((-speed, 0.0)));
+                        t.face_left();
+                    }
+                    if kp.KeyW() {
+                        new_player_state = PlayerState::Jump;
                         r.impulse(engine::math::Vec2::from((0.0, 50.0)));
-                        p.has_jump = true;
+                    }
+                    if kp.KeyK() {
+                        new_player_state = PlayerState::Attack(15);
+                    }
+
+                    if !c.has_hit_bottom() {
+                        new_player_state = PlayerState::Jump;
                     }
                 }
-                if kp.KeyD() {
-                    new_player_anim_state = AnimationState::Walk;
-                    t.translate(engine::math::Vec2::from((speed, 0.0)));
-                    t.face_right();
+                PlayerState::Jump => {
+                    if kp.KeyD() {
+                        t.translate(engine::math::Vec2::from((speed, 0.0)));
+                        t.face_right();
+                    }
+                    if kp.KeyA() {
+                        t.translate(engine::math::Vec2::from((-speed, 0.0)));
+                        t.face_left();
+                    }
+                    if kp.KeyK() {
+                        new_player_state = PlayerState::Attack(15);
+                    }
+                    if c.has_hit_bottom() {
+                        new_player_state = PlayerState::Idle;
+                    }
                 }
-                if kp.KeyA() {
-                    new_player_anim_state = AnimationState::Walk;
-                    t.translate(engine::math::Vec2::from((-speed, 0.0)));
-                    t.face_left();
+                PlayerState::Attack(remaning_time) => {
+                    *remaning_time -= 1;
+                    if kp.KeyD() {
+                        t.translate(engine::math::Vec2::from((speed, 0.0)));
+                        t.face_right();
+                    }
+                    if kp.KeyA() {
+                        t.translate(engine::math::Vec2::from((-speed, 0.0)));
+                        t.face_left();
+                    }
+                    if *remaning_time < 0 {
+                        if c.has_hit_bottom() {
+                            new_player_state = PlayerState::Idle;
+                        } else {
+                            new_player_state = PlayerState::Jump;
+                        }
+                    }
                 }
-            }
+            };
 
-            if new_player_anim_state != p.animation_state {
-                s.animation(new_player_anim_state.to_string());
-                p.animation_state = new_player_anim_state;
+            if new_player_state != p.state {
+                s.animation(new_player_state.to_string());
+                p.state = new_player_state;
             }
         }
     }
@@ -193,8 +240,9 @@ fn init(world: &mut World, player_image: engine::Image) {
                 .add_anim_desc(vec![
                     ("idle".into(), 4, (0..13).collect()),
                     ("walk".into(), 4, (13..21).collect()),
-                    ("jump".into(), 4, (65..71).collect()),
-                    ("attack".into(), 3, (26..36).collect()),
+                    ("jump".into(), 4, (65..66).collect()),
+                    ("jump2".into(), 4, (65..71).collect()),
+                    ("attack".into(), 2, (26..36).collect()),
                 ])
                 .build(),
         )
