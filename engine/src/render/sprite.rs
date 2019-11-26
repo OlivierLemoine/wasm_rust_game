@@ -42,8 +42,8 @@ impl SpriteBuilder {
 
         let sprites: Vec<_> = match (raw_image, image_size) {
             (Some(img), Some((w, h))) => {
-                let nb_row = img.width() as usize / w;
-                let nb_col = img.height() as usize / h;
+                let nb_col = img.width() as usize / w;
+                let nb_row = img.height() as usize / h;
                 let mut res = vec![vec![0u8; w * h * 4]; nb_row * nb_col];
 
                 for i in (0..img.width() as usize * img.height() as usize * 4).step_by(4) {
@@ -66,8 +66,6 @@ impl SpriteBuilder {
                     let local_pixel_y = global_pixel_y % h;
                     let local_index_pixel = local_pixel_x + local_pixel_y * w;
 
-                    println!("{} {}", local_pixel_x, local_pixel_y);
-
                     res[index_sub_image][local_index_pixel * 4] = color_r;
                     res[index_sub_image][local_index_pixel * 4 + 1] = color_g;
                     res[index_sub_image][local_index_pixel * 4 + 2] = color_b;
@@ -84,6 +82,12 @@ impl SpriteBuilder {
 
         let mut tree = BTreeMap::new();
 
+        let curr_animation = if let Some(v) = &anim_index {
+            v[0].0.clone()
+        } else {
+            "".into()
+        };
+
         if let Some(v) = anim_index {
             for (name, length, desc) in v {
                 let mut imgs = Vec::new();
@@ -99,14 +103,10 @@ impl SpriteBuilder {
         } else {
             tree.insert(String::from(""), Animation::from(sprites));
         }
-        // let mut anim = Animation::from(sprites);
-        // anim.change_length(4);
-
-        // tree.insert(String::from(""), anim);
 
         Sprite {
             animations: tree,
-            curr_animation: "".into(),
+            curr_animation,
         }
     }
 }
@@ -159,10 +159,10 @@ fn sprite_splitting() {
         SpriteBuilder::new()
             .add_image_from_raw(
                 vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
-                2,
-                2
+                4,
+                1
             )
-            .register_sprite_size(2, 2)
+            .register_sprite_size(1, 1)
             .build()
     );
     unimplemented!();
