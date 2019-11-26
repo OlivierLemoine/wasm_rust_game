@@ -1,58 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+        <title>Document</title>
+    </head>
 
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Document</title>
-</head>
-
-<body style="background-color: rgb(31, 31, 31); overflow: hidden;margin: 0; height: 100vh;">
-    <canvas id="game" style="background-color: rgb(255, 255, 255);"></canvas>
-    <script type="module">
-        import init, { start, resize } from './pkg/wasm.js';
-        window.pause = () => {
-            debugger;
-        };
-        (async () => {
-            let canvas = document.getElementById('game');
-            canvas.width = document.body.clientWidth;
-            canvas.height = document.body.clientHeight;
-
-            // let img = await (await fetch('./statics/player.png')).blob();
-            // console.log(URL.createObjectURL(img));
-
-            let img = new Image();
-
-            await new Promise((resolve, reject) => {
-                img.onload = () => resolve();
-                img.src = './statics/player.png';
-            });
-            let tmpCanvas = document.createElement('canvas');
-            tmpCanvas.width = img.width;
-            tmpCanvas.height = img.height;
-            let tmpCtx = tmpCanvas.getContext('2d');
-            tmpCtx.drawImage(img, 0, 0);
-            let data = tmpCtx.getImageData(0, 0, img.width, img.height);
-
-            for (let i = 0; i < 13; i++) {
-                for (let j = 0; j < 8; j++) {
-                    data.data[img.width * j + 32 * i * 4] = i + j * 8;
-                }
-            }
-
-            await init();
-            resize();
-            start(data);
-
-            window.addEventListener('resize', () => {
+    <body
+        style="background-color: rgb(31, 31, 31); overflow: hidden;margin: 0; height: 100vh;"
+    >
+        <canvas
+            id="game"
+            style="background-color: rgb(255, 255, 255);"
+        ></canvas>
+        <script type="module">
+            import init, { start, resize } from './pkg/wasm.js';
+            window.pause = () => {
+                debugger;
+            };
+            (async () => {
+                let canvas = document.getElementById('game');
                 canvas.width = document.body.clientWidth;
                 canvas.height = document.body.clientHeight;
-                resize();
-            });
-        })();
-    </script>
-</body>
 
+                // let img = await (await fetch('./statics/player.png')).blob();
+                // console.log(URL.createObjectURL(img));
+
+                let img = new Image();
+
+                await new Promise((resolve, reject) => {
+                    img.onload = () => resolve();
+                    img.src = './statics/player.png';
+                });
+                let tmpCanvas = document.createElement('canvas');
+                tmpCanvas.width = img.width;
+                tmpCanvas.height = img.height;
+                let tmpCtx = tmpCanvas.getContext('2d');
+                tmpCtx.drawImage(img, 0, 0);
+                let data = tmpCtx.getImageData(0, 0, img.width, img.height);
+
+                console.log(
+                    data.data[0],
+                    data.data[1],
+                    data.data[2],
+                    data.data[3],
+                );
+
+                await init();
+                resize();
+                start(data);
+
+                window.addEventListener('resize', () => {
+                    canvas.width = document.body.clientWidth;
+                    canvas.height = document.body.clientHeight;
+                    resize();
+                });
+            })();
+        </script>
+    </body>
 </html>

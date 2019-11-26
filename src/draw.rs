@@ -13,8 +13,8 @@ lazy_static! {
     static ref CTX: Context = { Context::from_id("game").unwrap() };
 }
 
-static mut canvas_width: f64 = 1.0;
-static mut canvas_height: f64 = 1.0;
+static mut CANVAS_WIDTH: f64 = 1.0;
+static mut CANVAS_HEIGHT: f64 = 1.0;
 
 #[wasm_bindgen]
 pub fn resize() {
@@ -27,8 +27,8 @@ pub fn resize() {
     let height = canvas.height() as f64;
 
     unsafe {
-        canvas_width = width;
-        canvas_height = height;
+        CANVAS_WIDTH = width;
+        CANVAS_HEIGHT = height;
     }
 }
 
@@ -44,8 +44,8 @@ impl<'a> System<'a> for DebugCollider {
         let ctx: &Context = &CTX;
 
         for (t, c) in (&transforms, &colliders).join() {
-            let canvas_center_x = unsafe { canvas_width } as f64 / 2.0;
-            let canvas_center_y = unsafe { canvas_height } as f64 / 2.0;
+            let canvas_center_x = unsafe { CANVAS_WIDTH } as f64 / 2.0;
+            let canvas_center_y = unsafe { CANVAS_HEIGHT } as f64 / 2.0;
 
             let obj_center_x = *t.position().x();
             let obj_center_y = *t.position().y();
@@ -77,38 +77,43 @@ impl<'a> System<'a> for SysRender {
 
     fn run(&mut self, (_camera, transforms, sprites): Self::SystemData) {
         let ctx: &Context = &CTX;
-        ctx.clear();
+
+        let mut res = ImgToDraw::new(unsafe { CANVAS_WIDTH } as usize, unsafe { CANVAS_HEIGHT }
+            as usize);
 
         for (t, s) in (&transforms, &sprites).join() {
             if let Some(img) = s.image() {
                 let image_center_x = img.width() as i32 / 2;
                 let image_center_y = img.height() as i32 / 2;
 
-                let canvas_center_x = unsafe { canvas_width } as i32 / 2;
-                let canvas_center_y = unsafe { canvas_height } as i32 / 2;
+                let canvas_center_x = unsafe { CANVAS_WIDTH } as i32 / 2;
+                let canvas_center_y = unsafe { CANVAS_HEIGHT } as i32 / 2;
 
                 let obj_center_x = *t.position().x() as i32;
                 let obj_center_y = *t.position().y() as i32;
 
                 let obj_scale_x = *t.scale().x() as i32;
-                // let obj_scale_y = *t.scale().y() as i32;
 
                 let pos_x = canvas_center_x - image_center_x + obj_center_x;
                 let pos_y = canvas_center_y - image_center_y - obj_center_y;
 
-                // console_log!("{}", obj_scale_x);
-
-                let data = ImgData(img.data());
-                let mut data = if obj_scale_x < 0 {
-                    data.flip_horizontaly(img.width() as usize)
-                } else {
-                    data.get()
-                };
+                // let data = ImgData(img.data());
+                // let mut data = if obj_scale_x < 0 {
+                //     data.flip_horizontaly(img.width() as usize)
+                // } else {
+                //     data.get()
+                // };
                 let width = img.width();
 
-                ctx.draw(&mut data, width, pos_x as u32, pos_y as u32)
-                    .unwrap();
+                if obj_scale_x < 0 {
+                    res.put_flipped(img.data(), width as usize, pos_x, pos_y);
+                } else {
+                    res.put(img.data(), width as usize, pos_x, pos_y);
+                }
             }
+
+            ctx.draw(&mut res.0, unsafe { CANVAS_WIDTH } as u32, 0, 0)
+                .unwrap();
         }
     }
 }
@@ -161,39 +166,62 @@ impl Context {
         self.ctx.stroke();
         Ok(())
     }
-
-    pub fn clear(&self) {
-        self.ctx.clear_rect(
-            0.0,
-            0.0,
-            unsafe { canvas_width } as f64,
-            unsafe { canvas_height } as f64,
-        );
-    }
 }
 
-struct ImgData<'a>(&'a Vec<u8>);
-
-impl<'a> ImgData<'a> {
-    fn get(&self) -> Vec<u8> {
-        self.0.clone()
+struct ImgToDraw(Vec<u8>, usize, usize);
+impl ImgToDraw {
+    fn new(w: usize, h: usize) -> Self {
+        ImgToDraw(vec![0; 4 * w * h], w, h)
     }
-    fn flip_horizontaly(&self, width: usize) -> Vec<u8> {
-        let mut res = vec![0u8; self.0.len()];
+    fn put(&mut self, img: &Vec<u8>, width: usize, x: i32, y: i32) {
+        for i in 0..width as i32 * (img.len() / 4 / width) as i32 {
+            let i_4 = i as usize * 4;
+            let r = i_4;
+            let g = i_4 + 1;
+            let b = i_4 + 2;
+            let a = i_4 + 3;
 
-        let pivot_width = width - 1;
+            let index_x = i % width as i32;
+            let index_y = i / width as i32;
+            let global_x = x + index_x;
+            let global_y = y + index_y;
 
-        for i in (0..self.0.len()).step_by(4) {
-            let new_i = i / 4;
-            let index_x = new_i % width;
-            let index_y = new_i / width;
-            let swaped_index_x = pivot_width - index_x;
-            let index = swaped_index_x + index_y * width;
-            res[index * 4] = self.0[i];
-            res[index * 4 + 1] = self.0[i + 1];
-            res[index * 4 + 2] = self.0[i + 2];
-            res[index * 4 + 3] = self.0[i + 3];
+            if 0 <= global_x
+                && global_x < self.1 as i32
+                && 0 <= global_y
+                && global_y < self.2 as i32
+            {
+                let global_index = global_x as usize + global_y as usize * self.1;
+                if img[a] != 0 {
+                    self.0[global_index * 4] = img[r];
+                    self.0[global_index * 4 + 1] = img[g];
+                    self.0[global_index * 4 + 2] = img[b];
+                    self.0[global_index * 4 + 3] = 255;
+                }
+            }
         }
-        res
+    }
+    fn put_flipped(&mut self, img: &Vec<u8>, width: usize, x: i32, y: i32) {
+        for i in 0..width as i32 * (img.len() / 4 / width) as i32 {
+            let index_x = i % width as i32;
+            let index_y = i / width as i32;
+            let global_x = x + index_x;
+            let global_y = y + index_y;
+
+            if 0 <= global_x
+                && global_x < self.1 as i32
+                && 0 <= global_y
+                && global_y < self.2 as i32
+            {
+                let global_index = (global_x as usize + global_y as usize * self.1) * 4;
+                let local_index = ((width - index_x as usize - 1) + index_y as usize * width) * 4;
+                if img[local_index + 3] != 0 {
+                    self.0[global_index] = img[local_index];
+                    self.0[global_index + 1] = img[local_index + 1];
+                    self.0[global_index + 2] = img[local_index + 2];
+                    self.0[global_index + 3] = 255;
+                }
+            }
+        }
     }
 }

@@ -38,6 +38,10 @@ impl Image {
         &self.data
     }
 
+    pub fn data_mut(&mut self) -> &mut Vec<u8> {
+        &mut self.data
+    }
+
     pub fn width(&self) -> u32 {
         self.width as u32
     }

@@ -1,4 +1,5 @@
 use super::animation::Animation;
+use super::color::Color;
 use super::image::Image;
 use log::*;
 use specs::prelude::*;
@@ -31,6 +32,19 @@ impl SpriteBuilder {
     }
     pub fn register_sprite_size(mut self, width: usize, height: usize) -> Self {
         self.image_size = Some((width, height));
+        self
+    }
+    pub fn apply_transparancy_on(mut self, c: Color) -> Self {
+        // self.raw_image.map(|mut img| {
+        // });
+        if let Some(img) = &mut self.raw_image {
+            let Color(r, g, b, _) = c;
+            for i in (0..img.data().len()).step_by(4) {
+                if img.data()[i] == r && img.data()[i + 1] == g && img.data()[i + 2] == b {
+                    img.data_mut()[i + 3] = 0;
+                }
+            }
+        }
         self
     }
     pub fn build(self) -> Sprite {
@@ -77,7 +91,7 @@ impl SpriteBuilder {
                     .collect()
             }
             (Some(img), None) => vec![img].into(),
-            (_, _) => vec![Image::rec(super::color::Color::red(), 10, 10)].into(),
+            (_, _) => vec![Image::rec(Color::red(), 10, 10)].into(),
         };
 
         let mut tree = BTreeMap::new();
