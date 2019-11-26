@@ -77,7 +77,6 @@ impl<'a> System<'a> for SysRender {
 
     fn run(&mut self, (_camera, transforms, sprites): Self::SystemData) {
         let ctx: &Context = &CTX;
-        // ctx.clear();
 
         let mut res = ImgToDraw::new(unsafe { CANVAS_WIDTH } as usize, unsafe { CANVAS_HEIGHT }
             as usize);
@@ -106,7 +105,11 @@ impl<'a> System<'a> for SysRender {
                 // };
                 let width = img.width();
 
-                res.put(img.data(), width as usize, pos_x, pos_y);
+                if obj_scale_x < 0 {
+                    res.put_flipped(img.data(), width as usize, pos_x, pos_y);
+                } else {
+                    res.put(img.data(), width as usize, pos_x, pos_y);
+                }
             }
 
             ctx.draw(&mut res.0, unsafe { CANVAS_WIDTH } as u32, 0, 0)
@@ -229,6 +232,29 @@ impl ImgToDraw {
                     self.0[global_index * 4 + 1] = img[g];
                     self.0[global_index * 4 + 2] = img[b];
                     self.0[global_index * 4 + 3] = 255;
+                }
+            }
+        }
+    }
+    fn put_flipped(&mut self, img: &Vec<u8>, width: usize, x: i32, y: i32) {
+        for i in 0..width as i32 * (img.len() / 4 / width) as i32 {
+            let index_x = i % width as i32;
+            let index_y = i / width as i32;
+            let global_x = x + index_x;
+            let global_y = y + index_y;
+
+            if 0 <= global_x
+                && global_x < self.1 as i32
+                && 0 <= global_y
+                && global_y < self.2 as i32
+            {
+                let global_index = (global_x as usize + global_y as usize * self.1) * 4;
+                let local_index = ((width - index_x as usize - 1) + index_y as usize * width) * 4;
+                if img[local_index + 3] != 0 {
+                    self.0[global_index] = img[local_index];
+                    self.0[global_index + 1] = img[local_index + 1];
+                    self.0[global_index + 2] = img[local_index + 2];
+                    self.0[global_index + 3] = 255;
                 }
             }
         }
