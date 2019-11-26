@@ -40,6 +40,13 @@
                 tmpCtx.drawImage(img, 0, 0);
                 let data = tmpCtx.getImageData(0, 0, img.width, img.height);
 
+                console.log(
+                    data.data[0],
+                    data.data[1],
+                    data.data[2],
+                    data.data[3],
+                );
+
                 await init();
                 resize();
                 start(data);

@@ -149,7 +149,7 @@ pub fn start(player_image: ImageData) -> Result<(), JsValue> {
         mover.run_now(&mut g.world);
         g.run_sys();
         renderer.run_now(&mut g.world);
-        deb.run_now(&mut g.world);
+        // deb.run_now(&mut g.world);
 
         request_animation_frame(closure.borrow().as_ref().unwrap()).unwrap();
     }) as Box<dyn FnMut()>));
@@ -183,6 +183,7 @@ fn init(world: &mut World, player_image: engine::Image) {
         .with(
             SpriteBuilder::new()
                 .add_image(player_image)
+                .apply_transparancy_on(engine::Color(0, 0, 0, 0))
                 .register_sprite_size(32, 32)
                 .add_anim_desc(vec![
                     ("idle".into(), 4, (0..13).collect()),

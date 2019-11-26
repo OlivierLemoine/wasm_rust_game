@@ -91,12 +91,9 @@ impl<'a> System<'a> for SysRender {
                 let obj_center_y = *t.position().y() as i32;
 
                 let obj_scale_x = *t.scale().x() as i32;
-                // let obj_scale_y = *t.scale().y() as i32;
 
                 let pos_x = canvas_center_x - image_center_x + obj_center_x;
                 let pos_y = canvas_center_y - image_center_y - obj_center_y;
-
-                // console_log!("{}", obj_scale_x);
 
                 let data = ImgData(img.data());
                 let mut data = if obj_scale_x < 0 {
@@ -195,5 +192,12 @@ impl<'a> ImgData<'a> {
             res[index * 4 + 3] = self.0[i + 3];
         }
         res
+    }
+}
+
+struct ImgToDraw(Vec<u8>);
+impl ImgToDraw {
+    fn new(w: usize, h: usize) -> Self {
+        ImgToDraw(vec![0; 4 * w * h])
     }
 }
