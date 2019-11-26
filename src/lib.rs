@@ -176,7 +176,7 @@ fn init(world: &mut World, player_image: engine::Image) {
         .with(RigidBodyBuilder::new().set_mass(10.0).build())
         .with(
             ColliderBuilder::new()
-                .collider_type(ColliderType::Rect(32.0, 32.0))
+                .collider_type(ColliderType::Rect(14.0, 30.0))
                 .build(),
         )
         .with(Collisions::default())
