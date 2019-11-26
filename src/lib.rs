@@ -191,10 +191,10 @@ fn init(world: &mut World, player_image: engine::Image) {
                 .apply_transparancy_on(engine::Color(0, 0, 0, 0))
                 .register_sprite_size(32, 32)
                 .add_anim_desc(vec![
-                    ("attack".into(), 100, (26..36).collect()),
                     ("idle".into(), 4, (0..13).collect()),
                     ("walk".into(), 4, (13..21).collect()),
                     ("jump".into(), 4, (65..71).collect()),
+                    ("attack".into(), 3, (26..36).collect()),
                 ])
                 .build(),
         )

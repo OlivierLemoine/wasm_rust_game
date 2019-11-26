@@ -23,6 +23,11 @@ impl Animation {
             self.curr_timer = 0;
         }
     }
+
+    pub fn reset(&mut self) {
+        self.curr_timer = 0;
+        self.index = 0;
+    }
 }
 impl From<Vec<Image>> for Animation {
     fn from(images: Vec<Image>) -> Self {
