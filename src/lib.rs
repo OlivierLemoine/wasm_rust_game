@@ -12,10 +12,31 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::ImageData;
 
+#[derive(PartialEq)]
+enum AnimationState {
+    Idle,
+    Walk,
+    Jump,
+}
+impl Default for AnimationState {
+    fn default() -> Self {
+        AnimationState::Idle
+    }
+}
+impl AnimationState {
+    pub fn to_string(&self) -> String {
+        match self {
+            AnimationState::Idle => String::from("idle"),
+            AnimationState::Walk => String::from("walk"),
+            AnimationState::Jump => String::from("jump"),
+        }
+    }
+}
+
 #[derive(Default)]
 struct Player {
     has_jump: bool,
-    is_walking: bool,
+    animation_state: AnimationState,
 }
 impl Component for Player {
     type Storage = DenseVecStorage<Self>;
@@ -46,7 +67,7 @@ impl<'a> System<'a> for TestMove {
             .join()
         {
             let speed = 2.0;
-            let mut new_player_walking_state = false;
+            let mut new_player_anim_state = AnimationState::Idle;
             t.face_right();
 
             if kp.w() {
@@ -58,28 +79,21 @@ impl<'a> System<'a> for TestMove {
                     p.has_jump = true;
                 }
             }
-            if kp.s() {
-                // t.translate(engine::math::Vec2::from((0.0, -speed)));
-                // r.impulse(engine::math::Vec2::from((0.0, -100.0)));
-            }
+            if kp.s() {}
             if kp.d() {
-                new_player_walking_state = true;
+                new_player_anim_state = AnimationState::Walk;
                 t.translate(engine::math::Vec2::from((speed, 0.0)));
             }
             if kp.a() {
-                new_player_walking_state = true;
+                new_player_anim_state = AnimationState::Walk;
                 t.translate(engine::math::Vec2::from((-speed, 0.0)));
                 t.face_left();
             }
 
-            if new_player_walking_state != p.is_walking {
-                s.animation(if new_player_walking_state {
-                    "walk".into()
-                } else {
-                    "idle".into()
-                });
+            if new_player_anim_state != p.animation_state {
+                s.animation(new_player_anim_state.to_string());
 
-                p.is_walking = new_player_walking_state;
+                p.animation_state = new_player_anim_state;
             }
         }
     }
@@ -151,25 +165,11 @@ pub fn start(player_image: ImageData) -> Result<(), JsValue> {
 }
 
 fn init(world: &mut World, player_image: engine::Image) {
-    world
-        .create_entity()
-        .with(
-            TransformBuilder::new()
-                .position(engine::math::Vec2::from((0.0, -100.0)))
-                .build(),
-        )
-        .with(
-            ColliderBuilder::new()
-                .collider_type(ColliderType::Rect(100.0, 30.0))
-                .build(),
-        )
-        .with(Collisions::default())
-        .with(Sprite::from(vec![engine::Image::rec(
-            engine::Color::blue(),
-            100,
-            30,
-        )]))
-        .build();
+    create_block_on_grid(world, -2, 2, -1, -2);
+    create_block_on_grid(world, 2, 4, -2, -3);
+    create_block_on_grid(world, -5, -3, 0, -5);
+    create_block_on_grid(world, -3, 7, -4, -5);
+    create_block_on_grid(world, 6, 7, -3, -4);
     world
         .create_entity()
         .with(Transform::default())
@@ -187,9 +187,46 @@ fn init(world: &mut World, player_image: engine::Image) {
                 .add_anim_desc(vec![
                     ("idle".into(), 4, (0..13).collect()),
                     ("walk".into(), 4, (13..21).collect()),
+                    ("jump".into(), 4, (65..71).collect()),
                 ])
                 .build(),
         )
         .with(Player::default())
+        .build();
+}
+
+fn create_block_on_grid(world: &mut World, l: i32, r: i32, t: i32, b: i32) {
+    let l = l as f64 * 40.0;
+    let r = r as f64 * 40.0;
+    let t = t as f64 * 40.0;
+    let b = b as f64 * 40.0;
+
+    // let x =
+    let w = r - l;
+    let h = t - b;
+    let x = l + w / 2.0;
+    let y = b + h / 2.0;
+    create_block(world, x, y, w, h);
+}
+
+fn create_block(world: &mut World, x: f64, y: f64, w: f64, h: f64) {
+    world
+        .create_entity()
+        .with(
+            TransformBuilder::new()
+                .position(engine::math::Vec2::from((x, y)))
+                .build(),
+        )
+        .with(
+            ColliderBuilder::new()
+                .collider_type(ColliderType::Rect(w, h))
+                .build(),
+        )
+        .with(Collisions::default())
+        .with(Sprite::from(vec![engine::Image::rec(
+            engine::Color::blue(),
+            w as usize,
+            h as usize,
+        )]))
         .build();
 }
