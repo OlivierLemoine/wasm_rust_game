@@ -1,4 +1,3 @@
-use super::collider::Collisions;
 use super::transform::Transform;
 use lazy_static::*;
 use math::Vec2;
@@ -45,6 +44,22 @@ impl RigidBody {
     pub fn impulse(&mut self, pulse: Vec2<f64>) {
         self.force += pulse;
     }
+
+    pub fn acceleration(&self) -> &Vec2<f64> {
+        &self.acceleration
+    }
+
+    pub fn acceleration_mut(&mut self) -> &mut Vec2<f64> {
+        &mut self.acceleration
+    }
+
+    pub fn velocity(&self) -> &Vec2<f64> {
+        &self.velocity
+    }
+
+    pub fn velocity_mut(&mut self) -> &mut Vec2<f64> {
+        &mut self.velocity
+    }
 }
 
 impl Component for RigidBody {
@@ -54,16 +69,10 @@ impl Component for RigidBody {
 pub struct PhysicsSystem;
 
 impl<'a> System<'a> for PhysicsSystem {
-    type SystemData = (
-        WriteStorage<'a, Transform>,
-        WriteStorage<'a, RigidBody>,
-        WriteStorage<'a, Collisions>,
-    );
+    type SystemData = (WriteStorage<'a, Transform>, WriteStorage<'a, RigidBody>);
 
-    fn run(&mut self, (mut transforms, mut rigid_bodies, mut collisions): Self::SystemData) {
-        for (t, r, c) in (&mut transforms, &mut rigid_bodies, &mut collisions).join() {
-            let (col_x, col_y) = (*c).take().map_or((0.0f64, 0.0f64), |v| v.at.break_self());
-
+    fn run(&mut self, (mut transforms, mut rigid_bodies): Self::SystemData) {
+        for (t, r) in (&mut transforms, &mut rigid_bodies).join() {
             r.acceleration = if r.mass > 0.0 {
                 let force = r.force;
                 r.force = Vec2::from((0.0, 0.0));
@@ -72,17 +81,6 @@ impl<'a> System<'a> for PhysicsSystem {
                 Vec2::from((0.0, 0.0))
             };
             r.velocity += r.acceleration;
-
-            if col_x != 0.0 {
-                *r.acceleration.x_mut() = 0.0;
-                *r.velocity.x_mut() = 0.0;
-            }
-            if col_y != 0.0 {
-                *r.acceleration.y_mut() = 0.0;
-                *r.velocity.y_mut() = 0.0;
-            }
-            *t.position_mut().x_mut() += col_x;
-            *t.position_mut().y_mut() += col_y;
 
             *t.position_mut() += r.velocity;
         }

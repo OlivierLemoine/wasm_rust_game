@@ -1,6 +1,6 @@
 use crate::physics::RigidBody;
 use crate::transform::Transform;
-use log::*;
+// use log::*;
 use math::Vec2;
 use specs::prelude::*;
 use std::ops::{Deref, DerefMut};
@@ -199,7 +199,7 @@ impl DerefMut for Collider {
 }
 
 #[derive(Default)]
-pub struct Collisions(Option<Collision>, bool);
+pub struct Collisions(Vec<Collision>, bool);
 impl Collisions {
     pub fn has_hit_bottom(&self) -> bool {
         self.1
@@ -209,7 +209,7 @@ impl Component for Collisions {
     type Storage = DenseVecStorage<Self>;
 }
 impl Deref for Collisions {
-    type Target = Option<Collision>;
+    type Target = Vec<Collision>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -228,22 +228,11 @@ impl<'a> System<'a> for CollideSystem {
         WriteStorage<'a, Collisions>,
         ReadStorage<'a, Collider>,
         ReadStorage<'a, Transform>,
-        ReadStorage<'a, RigidBody>,
     );
 
-    fn run(
-        &mut self,
-        (entities, mut collisions, colliders, transforms, rigidbodies): Self::SystemData,
-    ) {
-        for (e, c, c1, t, _) in (
-            &entities,
-            &mut collisions,
-            &colliders,
-            &transforms,
-            &rigidbodies,
-        )
-            .join()
-        {
+    fn run(&mut self, (entities, mut collisions, colliders, transforms): Self::SystemData) {
+        for (e, c, c1, t) in (&entities, &mut collisions, &colliders, &transforms).join() {
+            c.0 = Vec::new();
             c.1 = false;
             for (e2, c2, t2) in (&entities, &colliders, &transforms).join() {
                 if e != e2 {
@@ -253,10 +242,41 @@ impl<'a> System<'a> for CollideSystem {
                         if *v.y() > 0.0f64 {
                             c.1 = true;
                         }
-                        c.0 = Some(Collision { with: e2, at: v });
+                        c.0.push(Collision { with: e2, at: v });
                     }
                 }
             }
+        }
+    }
+}
+
+pub struct RepultionSystem;
+impl<'a> System<'a> for RepultionSystem {
+    type SystemData = (
+        WriteStorage<'a, Collisions>,
+        WriteStorage<'a, Transform>,
+        WriteStorage<'a, RigidBody>,
+    );
+
+    fn run(&mut self, (mut collisions, mut transforms, mut rigidbodies): Self::SystemData) {
+        for (c, t, r) in (&mut collisions, &mut transforms, &mut rigidbodies).join() {
+            let _: Vec<_> = (*c)
+                .iter()
+                .map(|v| {
+                    let (col_x, col_y) = v.at.break_self();
+
+                    if col_x != 0.0 {
+                        *t.position_mut().x_mut() += col_x;
+                        *r.acceleration_mut().x_mut() = 0.0;
+                        *r.velocity_mut().x_mut() = 0.0;
+                    }
+                    if col_y != 0.0 {
+                        *t.position_mut().y_mut() += col_y;
+                        *r.acceleration_mut().y_mut() = 0.0;
+                        *r.velocity_mut().y_mut() = 0.0;
+                    }
+                })
+                .collect();
         }
     }
 }

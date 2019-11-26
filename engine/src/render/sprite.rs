@@ -1,7 +1,7 @@
 use super::animation::Animation;
 use super::color::Color;
 use super::image::Image;
-use log::*;
+// use log::*;
 use specs::prelude::*;
 use std::collections::BTreeMap;
 
