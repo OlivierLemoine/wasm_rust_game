@@ -260,3 +260,33 @@ impl<'a> System<'a> for CollideSystem {
         }
     }
 }
+
+pub struct RepultionSystem;
+impl<'a> System<'a> for RepultionSystem {
+    type SystemData = (
+        WriteStorage<'a, Collisions>,
+        WriteStorage<'a, Transform>,
+        WriteStorage<'a, RigidBody>,
+    );
+
+    fn run(&mut self, (mut collisions, mut transforms, mut rigidbodies): Self::SystemData) {
+        for (c, t, r) in (&mut collisions, &mut transforms, &mut rigidbodies).join() {
+            (*c).take().map(|v| {
+                let (col_x, col_y) = v.at.break_self();
+
+                // console_log!("{} {}", col_x, col_y);
+
+                if col_x != 0.0 {
+                    *t.position_mut().x_mut() += col_x;
+                    *r.acceleration_mut().x_mut() = 0.0;
+                    *r.velocity_mut().x_mut() = 0.0;
+                }
+                if col_y != 0.0 {
+                    *t.position_mut().y_mut() += col_y;
+                    *r.acceleration_mut().y_mut() = 0.0;
+                    *r.velocity_mut().y_mut() = 0.0;
+                }
+            });
+        }
+    }
+}
