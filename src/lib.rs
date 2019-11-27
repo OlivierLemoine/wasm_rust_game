@@ -232,8 +232,9 @@ fn init(world: &mut World, player_image: engine::Image) {
                 .collider_type(ColliderType::Rect(14.0, 30.0))
                 .build(),
         )
-        .with(Layer1)
         .with(Collisions::default())
+        .with(AntiLayer1)
+        .with(Layer1)
         .with(
             SpriteBuilder::new()
                 .add_image(player_image.clone())
@@ -293,6 +294,8 @@ fn init(world: &mut World, player_image: engine::Image) {
                 .build(),
         )
         .with(Collisions::default())
+        .with(AntiLayer1)
+        .with(Layer1)
         .with(
             SpriteBuilder::new()
                 .add_image(player_image)
