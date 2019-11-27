@@ -7,12 +7,42 @@ pub struct AnimationBuilder {
     next_animation: Option<String>,
 }
 impl AnimationBuilder {
-    fn new() -> Self {
+    pub fn new() -> Self {
         AnimationBuilder {
             images: None,
             wait_time_between_2_img: None,
             repeat: None,
             next_animation: None,
+        }
+    }
+
+    pub fn register_images_index(mut self, indexes: Vec<usize>) ->Self {
+        self.images = Some(indexes);
+        self
+    }
+
+    pub fn change_wait_time(mut self, time: u32) -> Self{
+        self.wait_time_between_2_img = Some(time);
+        self
+    }
+
+    pub fn build(self, images: &Vec<Image>) -> Animation{
+        let AnimationBuilder {
+            images,
+            wait_time_between_2_img,
+            repeat,
+            next_animation,
+        } = self;
+
+        let mut images = Vec::new();
+
+        Animation{
+            images,
+            index: 0,
+            length: wait_time_between_2_img.unwrap_or(1),
+            curr_timer: 0,
+            next: next_animation,
+            repeat: repeat.unwrap_or(true),
         }
     }
 }
@@ -23,6 +53,8 @@ pub struct Animation {
     index: usize,
     length: u32,
     curr_timer: u32,
+    next: Option<String>,
+    repeat: bool,
 }
 impl Animation {
     pub fn change_length(&mut self, length: u32) {
@@ -44,15 +76,5 @@ impl Animation {
     pub fn reset(&mut self) {
         self.curr_timer = 0;
         self.index = 0;
-    }
-}
-impl From<Vec<Image>> for Animation {
-    fn from(images: Vec<Image>) -> Self {
-        Animation {
-            images,
-            index: 0,
-            length: 1,
-            curr_timer: 0,
-        }
     }
 }

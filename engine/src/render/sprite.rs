@@ -1,4 +1,4 @@
-use super::animation::Animation;
+use super::animation::{Animation, AnimationBuilder};
 use super::color::Color;
 use super::image::Image;
 // use log::*;
@@ -8,18 +8,18 @@ use std::collections::BTreeMap;
 pub struct SpriteBuilder {
     raw_image: Option<Image>,
     image_size: Option<(usize, usize)>,
-    anim_index: Option<Vec<(String, u32, Vec<usize>)>>,
+    animations: Vec<(String, AnimationBuilder)>,
 }
 impl SpriteBuilder {
     pub fn new() -> Self {
         SpriteBuilder {
             raw_image: None,
             image_size: None,
-            anim_index: None,
+            animations: Vec::new(),
         }
     }
-    pub fn add_anim_desc(mut self, anim_index: Vec<(String, u32, Vec<usize>)>) -> Self {
-        self.anim_index = Some(anim_index);
+    pub fn register_animation(mut self, name: String, animation: AnimationBuilder) -> Self {
+        self.animations.push((name, animation));
         self
     }
     pub fn add_image_from_raw(mut self, data: Vec<u8>, width: usize, height: usize) -> Self {
@@ -35,8 +35,6 @@ impl SpriteBuilder {
         self
     }
     pub fn apply_transparancy_on(mut self, c: Color) -> Self {
-        // self.raw_image.map(|mut img| {
-        // });
         if let Some(img) = &mut self.raw_image {
             let Color(r, g, b, _) = c;
             for i in (0..img.data().len()).step_by(4) {
@@ -51,7 +49,7 @@ impl SpriteBuilder {
         let SpriteBuilder {
             raw_image,
             image_size,
-            anim_index,
+            animations,
         } = self;
 
         let sprites: Vec<_> = match (raw_image, image_size) {
@@ -94,32 +92,20 @@ impl SpriteBuilder {
             (_, _) => vec![Image::rec(Color::red(), 10, 10)].into(),
         };
 
-        let mut tree = BTreeMap::new();
+        let mut animations_tree = BTreeMap::new();
 
-        let curr_animation = if let Some(v) = &anim_index {
-            v[0].0.clone()
+        let curr_animation = if animations.len() > 0 {
+            animations[0].0.clone()
         } else {
             "".into()
         };
 
-        if let Some(v) = anim_index {
-            for (name, length, desc) in v {
-                let mut imgs = Vec::new();
-
-                for i in desc {
-                    imgs.push(sprites[i].clone());
-                }
-
-                let mut anim = Animation::from(imgs);
-                anim.change_length(length);
-                tree.insert(name, anim);
-            }
-        } else {
-            tree.insert(String::from(""), Animation::from(sprites));
+        for (name, anim_builder) in animations {
+            animations_tree.insert(name, anim_builder.build(&sprites));
         }
 
         Sprite {
-            animations: tree,
+            animations: animations_tree,
             curr_animation,
         }
     }
@@ -149,7 +135,7 @@ impl Sprite {
 impl From<Vec<Image>> for Sprite {
     fn from(images: Vec<Image>) -> Self {
         let mut animations = BTreeMap::new();
-        animations.insert(String::from(""), Animation::from(images));
+        // animations.insert(String::from(""), Animation::from(images));
         Sprite {
             animations,
             curr_animation: "".into(),

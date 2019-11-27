@@ -237,13 +237,30 @@ fn init(world: &mut World, player_image: engine::Image) {
                 .add_image(player_image)
                 .apply_transparancy_on(engine::Color(0, 0, 0, 0))
                 .register_sprite_size(32, 32)
-                .add_anim_desc(vec![
-                    ("idle".into(), 4, (0..13).collect()),
-                    ("walk".into(), 4, (13..21).collect()),
-                    ("jump".into(), 4, (65..66).collect()),
-                    ("jump2".into(), 4, (65..71).collect()),
-                    ("attack".into(), 2, (26..36).collect()),
-                ])
+                .register_animation(
+                    "idle".into(),
+                    AnimationBuilder::new()
+                        .change_wait_time(4)
+                        .register_images_index((0..13).collect()),
+                )
+                .register_animation(
+                    "walk".into(),
+                    AnimationBuilder::new()
+                        .change_wait_time(4)
+                        .register_images_index((13..21).collect()),
+                )
+                .register_animation(
+                    "attack".into(),
+                    AnimationBuilder::new()
+                        .change_wait_time(4)
+                        .register_images_index((65..66).collect()),
+                )
+                .register_animation(
+                    "jump".into(),
+                    AnimationBuilder::new()
+                        .change_wait_time(4)
+                        .register_images_index((26..36).collect()),
+                )
                 .build(),
         )
         .with(Player::default())
