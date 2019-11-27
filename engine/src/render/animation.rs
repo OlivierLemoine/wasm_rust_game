@@ -26,6 +26,16 @@ impl AnimationBuilder {
         self
     }
 
+    pub fn no_repeat(mut self) -> Self {
+        self.repeat = Some(false);
+        self
+    }
+
+    pub fn next_animation(mut self, next: String) -> Self {
+        self.next_animation = Some(next);
+        self
+    }
+
     pub fn build(self, images: &Vec<Image>) -> Animation {
         let AnimationBuilder {
             images: indexes,
@@ -73,9 +83,11 @@ impl Animation {
 
     pub fn update(&mut self) -> Option<String> {
         self.curr_timer += 1;
-        if self.curr_timer >= self.length && self.repeat {
-            self.index = (self.index + 1) % self.images.len();
-            self.curr_timer = 0;
+        if self.curr_timer >= self.length {
+            if self.repeat {
+                self.index = (self.index + 1) % self.images.len();
+                self.curr_timer = 0;
+            }
             return self.next.clone();
         }
         None
