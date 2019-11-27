@@ -82,7 +82,7 @@ impl<'a> System<'a> for PhysicsSystem {
             };
             r.velocity += r.acceleration;
 
-            *t.position_mut() += r.velocity;
+            t.position += r.velocity;
         }
     }
 }

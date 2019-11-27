@@ -73,23 +73,6 @@ impl Default for Transform {
 }
 
 impl Transform {
-    #[inline]
-    pub fn position(&self) -> &Vec2<f64> {
-        &self.position
-    }
-
-    pub fn position_mut(&mut self) -> &mut Vec2<f64> {
-        &mut self.position
-    }
-
-    pub fn scale(&self) -> &Vec2<f64> {
-        &self.scale
-    }
-
-    pub fn scale_mut(&mut self) -> &mut Vec2<f64> {
-        &mut self.scale
-    }
-
     pub fn translate(&mut self, other: Vec2<f64>) {
         self.position += other;
     }

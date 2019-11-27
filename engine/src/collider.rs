@@ -64,8 +64,8 @@ macro_rules! flag {
                         if e != e2 {
                             if let Some(v) = c1.0.collide_with(
                                 &c2.0,
-                                t.position().clone(),
-                                t2.position().clone(),
+                                t.position.clone(),
+                                t2.position.clone(),
                             ) {
                                 if v.y > 0.0f64 {
                                     c.1 = true;
@@ -291,12 +291,12 @@ impl<'a> System<'a> for RepultionSystem {
                     let (col_x, col_y) = v.at.break_self();
 
                     if col_x != 0.0 {
-                        t.position_mut().x += col_x;
+                        t.position.x += col_x;
                         r.acceleration_mut().x = 0.0;
                         r.velocity_mut().x = 0.0;
                     }
                     if col_y != 0.0 {
-                        t.position_mut().y += col_y;
+                        t.position.y += col_y;
                         r.acceleration_mut().y = 0.0;
                         r.velocity_mut().y = 0.0;
                     }

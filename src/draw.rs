@@ -47,8 +47,8 @@ impl<'a> System<'a> for DebugCollider {
             let canvas_center_x = unsafe { CANVAS_WIDTH } as f64 / 2.0;
             let canvas_center_y = unsafe { CANVAS_HEIGHT } as f64 / 2.0;
 
-            let obj_center_x = t.position().x;
-            let obj_center_y = t.position().y;
+            let obj_center_x = t.position.x;
+            let obj_center_y = t.position.y;
 
             let pos_x = canvas_center_x + obj_center_x;
             let pos_y = canvas_center_y - obj_center_y;
@@ -89,10 +89,10 @@ impl<'a> System<'a> for SysRender {
                 let canvas_center_x = unsafe { CANVAS_WIDTH } as i32 / 2;
                 let canvas_center_y = unsafe { CANVAS_HEIGHT } as i32 / 2;
 
-                let obj_center_x = t.position().x as i32;
-                let obj_center_y = t.position().y as i32;
+                let obj_center_x = t.position.x as i32;
+                let obj_center_y = t.position.y as i32;
 
-                let obj_scale_x = t.scale().x as i32;
+                let obj_scale_x = t.scale.x as i32;
 
                 let pos_x = canvas_center_x - image_center_x + obj_center_x;
                 let pos_y = canvas_center_y - image_center_y - obj_center_y;
