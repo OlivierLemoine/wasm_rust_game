@@ -313,7 +313,7 @@ fn create_block(world: &mut World, x: f64, y: f64, w: f64, h: f64) {
         )
         .with(Collisions::default())
         .with(Sprite::from(vec![engine::Image::rec(
-            engine::Color::blue(),
+            engine::Color(176, 96, 35, 255),
             w as usize,
             h as usize,
         )]))
