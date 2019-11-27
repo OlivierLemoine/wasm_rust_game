@@ -32,7 +32,8 @@ use specs::prelude::*;
 pub struct Game {
     pub world: specs::shred::World,
     physics: physics::PhysicsSystem,
-    collider: collider::CollideSystem,
+    layer1: collider::Layer1System,
+    layer2: collider::Layer2System,
     repulsor: collider::RepultionSystem,
     sprite: render::sprite::SpriteUpdaterSystem,
 }
@@ -49,19 +50,22 @@ impl Game {
         world.register::<render::sprite::Sprite>();
 
         let mut physics = physics::PhysicsSystem;
-        let mut collider = collider::CollideSystem;
+        let mut layer1 = collider::Layer1System;
+        let mut layer2 = collider::Layer2System;
         let mut repulsor = collider::RepultionSystem;
         let mut sprite = render::sprite::SpriteUpdaterSystem;
 
         specs::shred::RunNow::setup(&mut physics, &mut world);
-        specs::shred::RunNow::setup(&mut collider, &mut world);
+        specs::shred::RunNow::setup(&mut layer1, &mut world);
+        specs::shred::RunNow::setup(&mut layer2, &mut world);
         specs::shred::RunNow::setup(&mut repulsor, &mut world);
         specs::shred::RunNow::setup(&mut sprite, &mut world);
 
         Game {
             world,
             physics,
-            collider,
+            layer1,
+            layer2,
             repulsor,
             sprite,
         }
@@ -69,7 +73,8 @@ impl Game {
 
     pub fn run_sys(&mut self) {
         self.physics.run_now(&mut self.world);
-        self.collider.run_now(&mut self.world);
+        self.layer1.run_now(&mut self.world);
+        self.layer2.run_now(&mut self.world);
         self.repulsor.run_now(&mut self.world);
         self.sprite.run_now(&mut self.world);
     }

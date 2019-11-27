@@ -29,6 +29,54 @@ macro_rules! min_abs {
     }}
 }
 
+macro_rules! flag {
+    ($component_name: ident, $system_name: ident) => {
+        #[derive(Default)]
+        pub struct $component_name;
+        impl Component for $component_name {
+            type Storage = NullStorage<Self>;
+        }
+        pub struct $system_name;
+        impl<'a> System<'a> for $system_name {
+            type SystemData = (
+                Entities<'a>,
+                WriteStorage<'a, Collisions>,
+                ReadStorage<'a, Collider>,
+                ReadStorage<'a, Transform>,
+                ReadStorage<'a, $component_name>,
+            );
+            fn run(
+                &mut self,
+                (entities, mut collisions, colliders, transforms, flag): Self::SystemData,
+            ) {
+                for (e, c, c1, t, _) in
+                    (&entities, &mut collisions, &colliders, &transforms, &flag).join()
+                {
+                    c.0 = Vec::new();
+                    c.1 = false;
+                    for (e2, c2, t2) in (&entities, &colliders, &transforms).join() {
+                        if e != e2 {
+                            if let Some(v) = c1.0.collide_with(
+                                &c2.0,
+                                t.position().clone(),
+                                t2.position().clone(),
+                            ) {
+                                if *v.y() > 0.0f64 {
+                                    c.1 = true;
+                                }
+                                c.0.push(Collision { with: e2, at: v });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    };
+}
+
+flag!(Layer1, Layer1System);
+flag!(Layer2, Layer2System);
+
 pub enum ColliderType {
     Circle(f64),
     Rect(f64, f64),
@@ -218,35 +266,6 @@ impl Deref for Collisions {
 impl DerefMut for Collisions {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
-    }
-}
-
-pub struct CollideSystem;
-impl<'a> System<'a> for CollideSystem {
-    type SystemData = (
-        Entities<'a>,
-        WriteStorage<'a, Collisions>,
-        ReadStorage<'a, Collider>,
-        ReadStorage<'a, Transform>,
-    );
-
-    fn run(&mut self, (entities, mut collisions, colliders, transforms): Self::SystemData) {
-        for (e, c, c1, t) in (&entities, &mut collisions, &colliders, &transforms).join() {
-            c.0 = Vec::new();
-            c.1 = false;
-            for (e2, c2, t2) in (&entities, &colliders, &transforms).join() {
-                if e != e2 {
-                    if let Some(v) =
-                        c1.0.collide_with(&c2.0, t.position().clone(), t2.position().clone())
-                    {
-                        if *v.y() > 0.0f64 {
-                            c.1 = true;
-                        }
-                        c.0.push(Collision { with: e2, at: v });
-                    }
-                }
-            }
-        }
     }
 }
 
