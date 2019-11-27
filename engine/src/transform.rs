@@ -57,9 +57,9 @@ impl TransformBuilder {
 
 #[derive(Debug)]
 pub struct Transform {
-    position: Vec2<f64>,
-    rotation: f64,
-    scale: Vec2<f64>,
+    pub position: Vec2<f64>,
+    pub rotation: f64,
+    pub scale: Vec2<f64>,
 }
 
 impl Default for Transform {
