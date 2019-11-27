@@ -44,22 +44,6 @@ impl RigidBody {
     pub fn impulse(&mut self, pulse: Vec2<f64>) {
         self.force += pulse;
     }
-
-    pub fn acceleration(&self) -> &Vec2<f64> {
-        &self.acceleration
-    }
-
-    pub fn acceleration_mut(&mut self) -> &mut Vec2<f64> {
-        &mut self.acceleration
-    }
-
-    pub fn velocity(&self) -> &Vec2<f64> {
-        &self.velocity
-    }
-
-    pub fn velocity_mut(&mut self) -> &mut Vec2<f64> {
-        &mut self.velocity
-    }
 }
 
 impl Component for RigidBody {

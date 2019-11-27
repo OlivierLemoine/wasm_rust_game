@@ -292,13 +292,13 @@ impl<'a> System<'a> for RepultionSystem {
 
                     if col_x != 0.0 {
                         t.position.x += col_x;
-                        r.acceleration_mut().x = 0.0;
-                        r.velocity_mut().x = 0.0;
+                        r.acceleration.x = 0.0;
+                        r.velocity.x = 0.0;
                     }
                     if col_y != 0.0 {
                         t.position.y += col_y;
-                        r.acceleration_mut().y = 0.0;
-                        r.velocity_mut().y = 0.0;
+                        r.acceleration.y = 0.0;
+                        r.velocity.y = 0.0;
                     }
                 })
                 .collect();
