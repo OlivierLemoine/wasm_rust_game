@@ -40,7 +40,7 @@ impl PlayerState {
         match self {
             PlayerState::Idle => String::from("idle"),
             PlayerState::Walk => String::from("walk"),
-            PlayerState::Jump => String::from("jump"),
+            PlayerState::Jump => String::from("jump_beg"),
             PlayerState::Attack(_) => String::from("attack"),
         }
     }
@@ -84,6 +84,7 @@ impl<'a> System<'a> for TestMove {
 
             match &mut p.state {
                 PlayerState::Idle | PlayerState::Walk => {
+                    new_player_state = PlayerState::Idle;
                     if kp.KeyD() {
                         new_player_state = PlayerState::Walk;
                         t.translate(engine::math::Vec2::from((speed, 0.0)));
@@ -253,13 +254,29 @@ fn init(world: &mut World, player_image: engine::Image) {
                     "attack".into(),
                     AnimationBuilder::new()
                         .change_wait_time(4)
-                        .register_images_index((65..66).collect()),
+                        .register_images_index((26..36).collect()),
+                )
+                .register_animation(
+                    "jump_beg".into(),
+                    AnimationBuilder::new()
+                        .change_wait_time(4)
+                        .no_repeat()
+                        .next_animation("jump".into())
+                        .register_images_index((65..69).collect()),
                 )
                 .register_animation(
                     "jump".into(),
                     AnimationBuilder::new()
                         .change_wait_time(4)
-                        .register_images_index((26..36).collect()),
+                        .no_repeat()
+                        .register_images_index((69..70).collect()),
+                )
+                .register_animation(
+                    "jump_end".into(),
+                    AnimationBuilder::new()
+                        .change_wait_time(4)
+                        .no_repeat()
+                        .register_images_index((70..72).collect()),
                 )
                 .build(),
         )
