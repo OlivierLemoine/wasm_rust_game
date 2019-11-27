@@ -34,10 +34,10 @@ impl RigidBodyBuilder {
 
 #[derive(Default)]
 pub struct RigidBody {
-    mass: f64,
-    force: Vec2<f64>,
-    acceleration: Vec2<f64>,
-    velocity: Vec2<f64>,
+    pub mass: f64,
+    pub force: Vec2<f64>,
+    pub acceleration: Vec2<f64>,
+    pub velocity: Vec2<f64>,
 }
 
 impl RigidBody {
