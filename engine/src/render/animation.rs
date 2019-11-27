@@ -16,28 +16,34 @@ impl AnimationBuilder {
         }
     }
 
-    pub fn register_images_index(mut self, indexes: Vec<usize>) ->Self {
+    pub fn register_images_index(mut self, indexes: Vec<usize>) -> Self {
         self.images = Some(indexes);
         self
     }
 
-    pub fn change_wait_time(mut self, time: u32) -> Self{
+    pub fn change_wait_time(mut self, time: u32) -> Self {
         self.wait_time_between_2_img = Some(time);
         self
     }
 
-    pub fn build(self, images: &Vec<Image>) -> Animation{
+    pub fn build(self, images: &Vec<Image>) -> Animation {
         let AnimationBuilder {
-            images,
+            images: indexes,
             wait_time_between_2_img,
             repeat,
             next_animation,
         } = self;
 
-        let mut images = Vec::new();
+        let indexes = indexes.unwrap_or(vec![0]);
 
-        Animation{
-            images,
+        let mut res = Vec::new();
+
+        for i in indexes {
+            res.push(images[i].clone());
+        }
+
+        Animation {
+            images: res,
             index: 0,
             length: wait_time_between_2_img.unwrap_or(1),
             curr_timer: 0,

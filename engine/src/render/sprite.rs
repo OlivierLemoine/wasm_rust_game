@@ -135,12 +135,7 @@ impl Sprite {
 impl From<Vec<Image>> for Sprite {
     fn from(images: Vec<Image>) -> Self {
         let mut animations = BTreeMap::new();
-        animations.insert(
-            String::from(""),
-            AnimationBuilder::new()
-                .register_images_index(vec![0])
-                .build(&images),
-        );
+        animations.insert(String::from(""), AnimationBuilder::new().build(&images));
         Sprite {
             animations,
             curr_animation: "".into(),
