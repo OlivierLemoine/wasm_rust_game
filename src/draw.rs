@@ -96,13 +96,6 @@ impl<'a> System<'a> for SysRender {
 
                 let pos_x = canvas_center_x - image_center_x + obj_center_x;
                 let pos_y = canvas_center_y - image_center_y - obj_center_y;
-
-                // let data = ImgData(img.data());
-                // let mut data = if obj_scale_x < 0 {
-                //     data.flip_horizontaly(img.width() as usize)
-                // } else {
-                //     data.get()
-                // };
                 let width = img.width();
 
                 if obj_scale_x < 0 {
