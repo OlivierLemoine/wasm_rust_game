@@ -232,6 +232,7 @@ fn init(world: &mut World, player_image: engine::Image) {
                 .collider_type(ColliderType::Rect(14.0, 30.0))
                 .build(),
         )
+        .with(Layer1)
         .with(Collisions::default())
         .with(
             SpriteBuilder::new()
@@ -369,6 +370,7 @@ fn create_block(world: &mut World, x: f64, y: f64, w: f64, h: f64) {
                 .collider_type(ColliderType::Rect(w, h))
                 .build(),
         )
+        .with(Layer1)
         .with(Collisions::default())
         .with(Sprite::from(vec![engine::Image::rec(
             engine::Color(176, 96, 35, 255),
