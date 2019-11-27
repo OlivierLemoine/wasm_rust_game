@@ -16,7 +16,9 @@ pub mod builder {
     pub use crate::transform::TransformBuilder;
 }
 pub mod components {
-    pub use crate::collider::{Collider, Collisions, Layer1, Layer2};
+    pub use crate::collider::{AntiLayer1, Layer1};
+    pub use crate::collider::{AntiLayer2, Layer2};
+    pub use crate::collider::{Collider, Collisions};
     pub use crate::physics::RigidBody;
     pub use crate::render::sprite::Sprite;
     pub use crate::transform::Transform;

@@ -30,10 +30,15 @@ macro_rules! min_abs {
 }
 
 macro_rules! flag {
-    ($component_name: ident, $system_name: ident) => {
+    ($component_name: ident, $anti_component_name: ident, $system_name: ident) => {
         #[derive(Default)]
         pub struct $component_name;
         impl Component for $component_name {
+            type Storage = NullStorage<Self>;
+        }
+        #[derive(Default)]
+        pub struct $anti_component_name;
+        impl Component for $anti_component_name {
             type Storage = NullStorage<Self>;
         }
         pub struct $system_name;
@@ -44,17 +49,18 @@ macro_rules! flag {
                 ReadStorage<'a, Collider>,
                 ReadStorage<'a, Transform>,
                 ReadStorage<'a, $component_name>,
+                ReadStorage<'a, $anti_component_name>,
             );
             fn run(
                 &mut self,
-                (entities, mut collisions, colliders, transforms, flag): Self::SystemData,
+                (entities, mut collisions, colliders, transforms, flags, anti_flags): Self::SystemData,
             ) {
                 for (e, c, c1, t, _) in
-                    (&entities, &mut collisions, &colliders, &transforms, &flag).join()
+                    (&entities, &mut collisions, &colliders, &transforms, &flags).join()
                 {
                     c.0 = Vec::new();
                     c.1 = false;
-                    for (e2, c2, t2) in (&entities, &colliders, &transforms).join() {
+                    for (e2, c2, t2, _, _) in (&entities, &colliders, &transforms, &flags, !&anti_flags).join() {
                         if e != e2 {
                             if let Some(v) = c1.0.collide_with(
                                 &c2.0,
@@ -74,8 +80,8 @@ macro_rules! flag {
     };
 }
 
-flag!(Layer1, Layer1System);
-flag!(Layer2, Layer2System);
+flag!(Layer1, AntiLayer1, Layer1System);
+flag!(Layer2, AntiLayer2, Layer2System);
 
 pub enum ColliderType {
     Circle(f64),
