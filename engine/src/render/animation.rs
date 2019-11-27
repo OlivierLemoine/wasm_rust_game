@@ -1,5 +1,22 @@
 use super::image::Image;
 
+pub struct AnimationBuilder {
+    images: Option<Vec<usize>>,
+    wait_time_between_2_img: Option<u32>,
+    repeat: Option<bool>,
+    next_animation: Option<String>,
+}
+impl AnimationBuilder {
+    fn new() -> Self {
+        AnimationBuilder {
+            images: None,
+            wait_time_between_2_img: None,
+            repeat: None,
+            next_animation: None,
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct Animation {
     images: Vec<Image>,
