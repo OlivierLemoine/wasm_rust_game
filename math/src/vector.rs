@@ -38,21 +38,6 @@ impl<T> From<(T, T)> for Vec2<T> {
     }
 }
 
-impl<T> Vec2<T> {
-    pub fn x(&self) -> &T {
-        &self.x
-    }
-    pub fn y(&self) -> &T {
-        &self.y
-    }
-    pub fn x_mut(&mut self) -> &mut T {
-        &mut self.x
-    }
-    pub fn y_mut(&mut self) -> &mut T {
-        &mut self.y
-    }
-}
-
 impl<T: AddAssign> AddAssign for Vec2<T> {
     fn add_assign(&mut self, other: Self) {
         self.x += other.x;
@@ -149,36 +134,5 @@ impl<T: Neg<Output = T>> Neg for Vec2<T> {
         self.x = -self.x;
         self.y = -self.y;
         self
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn vec_from_tuple() {
-        let v = Vec2::from((3u32, 5));
-        assert_eq!(v, Vec2(3u32, 5));
-    }
-
-    #[test]
-    fn vec_add_with_vec() {
-        let v1 = Vec2(3u32, 5);
-        let v2 = Vec2(4u32, 1);
-        assert_eq!(v1 + v2, Vec2(7u32, 6));
-    }
-}
-
-impl<T: PartialOrd> PartialOrd for Vec2<T> {
-    fn partial_cmp(&self, other: &Vec2<T>) -> Option<Ordering> {
-        if self.x == other.x && self.y == other.y {
-            Some(Ordering::Equal)
-        } else if self.x <= other.x && self.y <= other.y {
-            Some(Ordering::Less)
-        } else if self.x >= other.x && self.y >= other.y {
-            Some(Ordering::Greater)
-        } else {
-            None
-        }
     }
 }

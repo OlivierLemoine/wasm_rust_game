@@ -67,7 +67,7 @@ macro_rules! flag {
                                 t.position().clone(),
                                 t2.position().clone(),
                             ) {
-                                if *v.y() > 0.0f64 {
+                                if v.y > 0.0f64 {
                                     c.1 = true;
                                 }
                                 c.0.push(Collision { with: e2, at: v });
@@ -113,15 +113,15 @@ impl ColliderType {
                 let w2 = *w2 / 2.0;
                 let h2 = *h2 / 2.0;
 
-                let b1_x_min = p1.x() - w1;
-                let b1_x_max = p1.x() + w1;
-                let b1_y_min = p1.y() - h1;
-                let b1_y_max = p1.y() + h1;
+                let b1_x_min = p1.x - w1;
+                let b1_x_max = p1.x + w1;
+                let b1_y_min = p1.y - h1;
+                let b1_y_max = p1.y + h1;
 
-                let b2_x_min = p2.x() - w2;
-                let b2_x_max = p2.x() + w2;
-                let b2_y_min = p2.y() - h2;
-                let b2_y_max = p2.y() + h2;
+                let b2_x_min = p2.x - w2;
+                let b2_x_max = p2.x + w2;
+                let b2_y_min = p2.y - h2;
+                let b2_y_max = p2.y + h2;
 
                 [
                     (b1_x_min, b1_y_min),
@@ -174,10 +174,10 @@ impl ColliderType {
                 let w = *w / 2.0;
                 let h = *h / 2.0;
 
-                let b_x_min = p1.x() - w;
-                let b_x_max = p1.x() + w;
-                let b_y_min = p1.y() - h;
-                let b_y_max = p1.y() + h;
+                let b_x_min = p1.x - w;
+                let b_x_max = p1.x + w;
+                let b_y_min = p1.y - h;
+                let b_y_max = p1.y + h;
 
                 let radius_square = r * r;
 
@@ -291,14 +291,14 @@ impl<'a> System<'a> for RepultionSystem {
                     let (col_x, col_y) = v.at.break_self();
 
                     if col_x != 0.0 {
-                        *t.position_mut().x_mut() += col_x;
-                        *r.acceleration_mut().x_mut() = 0.0;
-                        *r.velocity_mut().x_mut() = 0.0;
+                        t.position_mut().x += col_x;
+                        r.acceleration_mut().x = 0.0;
+                        r.velocity_mut().x = 0.0;
                     }
                     if col_y != 0.0 {
-                        *t.position_mut().y_mut() += col_y;
-                        *r.acceleration_mut().y_mut() = 0.0;
-                        *r.velocity_mut().y_mut() = 0.0;
+                        t.position_mut().y += col_y;
+                        r.acceleration_mut().y = 0.0;
+                        r.velocity_mut().y = 0.0;
                     }
                 })
                 .collect();

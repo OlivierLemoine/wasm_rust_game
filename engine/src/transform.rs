@@ -95,18 +95,17 @@ impl Transform {
     }
 
     pub fn flip_side(&mut self) {
-        let old_value = *self.scale.x();
-        *self.scale.x_mut() = -old_value;
+        self.scale.x = -self.scale.x;
     }
 
     pub fn face_left(&mut self) {
-        if *self.scale.x() > 0.0 {
+        if self.scale.x > 0.0 {
             self.flip_side();
         }
     }
 
     pub fn face_right(&mut self) {
-        if *self.scale.x() < 0.0 {
+        if self.scale.x < 0.0 {
             self.flip_side();
         }
     }
