@@ -57,9 +57,9 @@ impl TransformBuilder {
 
 #[derive(Debug)]
 pub struct Transform {
-    position: Vec2<f64>,
-    rotation: f64,
-    scale: Vec2<f64>,
+    pub position: Vec2<f64>,
+    pub rotation: f64,
+    pub scale: Vec2<f64>,
 }
 
 impl Default for Transform {
@@ -73,40 +73,22 @@ impl Default for Transform {
 }
 
 impl Transform {
-    #[inline]
-    pub fn position(&self) -> &Vec2<f64> {
-        &self.position
-    }
-
-    pub fn position_mut(&mut self) -> &mut Vec2<f64> {
-        &mut self.position
-    }
-
-    pub fn scale(&self) -> &Vec2<f64> {
-        &self.scale
-    }
-
-    pub fn scale_mut(&mut self) -> &mut Vec2<f64> {
-        &mut self.scale
-    }
-
     pub fn translate(&mut self, other: Vec2<f64>) {
         self.position += other;
     }
 
     pub fn flip_side(&mut self) {
-        let old_value = *self.scale.x();
-        *self.scale.x_mut() = -old_value;
+        self.scale.x = -self.scale.x;
     }
 
     pub fn face_left(&mut self) {
-        if *self.scale.x() > 0.0 {
+        if self.scale.x > 0.0 {
             self.flip_side();
         }
     }
 
     pub fn face_right(&mut self) {
-        if *self.scale.x() < 0.0 {
+        if self.scale.x < 0.0 {
             self.flip_side();
         }
     }

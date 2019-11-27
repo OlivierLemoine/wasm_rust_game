@@ -34,31 +34,15 @@ impl RigidBodyBuilder {
 
 #[derive(Default)]
 pub struct RigidBody {
-    mass: f64,
-    force: Vec2<f64>,
-    acceleration: Vec2<f64>,
-    velocity: Vec2<f64>,
+    pub mass: f64,
+    pub force: Vec2<f64>,
+    pub acceleration: Vec2<f64>,
+    pub velocity: Vec2<f64>,
 }
 
 impl RigidBody {
     pub fn impulse(&mut self, pulse: Vec2<f64>) {
         self.force += pulse;
-    }
-
-    pub fn acceleration(&self) -> &Vec2<f64> {
-        &self.acceleration
-    }
-
-    pub fn acceleration_mut(&mut self) -> &mut Vec2<f64> {
-        &mut self.acceleration
-    }
-
-    pub fn velocity(&self) -> &Vec2<f64> {
-        &self.velocity
-    }
-
-    pub fn velocity_mut(&mut self) -> &mut Vec2<f64> {
-        &mut self.velocity
     }
 }
 
@@ -82,7 +66,7 @@ impl<'a> System<'a> for PhysicsSystem {
             };
             r.velocity += r.acceleration;
 
-            *t.position_mut() += r.velocity;
+            t.position += r.velocity;
         }
     }
 }
