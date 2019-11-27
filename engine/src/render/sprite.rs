@@ -127,9 +127,13 @@ impl Sprite {
             .map(|v| v.reset());
     }
     pub fn update(&mut self) {
-        self.animations
+        if let Some(Some(next)) = self
+            .animations
             .get_mut(&self.curr_animation)
-            .map(|v| v.update());
+            .map(|v| v.update())
+        {
+            self.curr_animation = next;
+        }
     }
 }
 impl From<Vec<Image>> for Sprite {

@@ -71,12 +71,14 @@ impl Animation {
         &self.images[self.index]
     }
 
-    pub fn update(&mut self) {
+    pub fn update(&mut self) -> Option<String> {
         self.curr_timer += 1;
-        if self.curr_timer >= self.length {
+        if self.curr_timer >= self.length && self.repeat {
             self.index = (self.index + 1) % self.images.len();
             self.curr_timer = 0;
+            return self.next.clone();
         }
+        None
     }
 
     pub fn reset(&mut self) {
