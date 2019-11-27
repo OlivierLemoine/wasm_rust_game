@@ -235,7 +235,7 @@ fn init(world: &mut World, player_image: engine::Image) {
         .with(Collisions::default())
         .with(
             SpriteBuilder::new()
-                .add_image(player_image)
+                .add_image(player_image.clone())
                 .apply_transparancy_on(engine::Color(0, 0, 0, 0))
                 .register_sprite_size(32, 32)
                 .register_animation(
@@ -281,6 +281,64 @@ fn init(world: &mut World, player_image: engine::Image) {
                 .build(),
         )
         .with(Player::default())
+        .build();
+    world
+        .create_entity()
+        .with(Transform::default())
+        .with(RigidBodyBuilder::new().set_mass(10.0).build())
+        .with(
+            ColliderBuilder::new()
+                .collider_type(ColliderType::Rect(14.0, 30.0))
+                .build(),
+        )
+        .with(Collisions::default())
+        .with(
+            SpriteBuilder::new()
+                .add_image(player_image)
+                .apply_transparancy_on(engine::Color(0, 0, 0, 0))
+                .register_sprite_size(32, 32)
+                .register_animation(
+                    "idle".into(),
+                    AnimationBuilder::new()
+                        .change_wait_time(4)
+                        .register_images_index((0..13).collect()),
+                )
+                .register_animation(
+                    "walk".into(),
+                    AnimationBuilder::new()
+                        .change_wait_time(4)
+                        .register_images_index((13..21).collect()),
+                )
+                .register_animation(
+                    "attack".into(),
+                    AnimationBuilder::new()
+                        .change_wait_time(4)
+                        .register_images_index((26..36).collect()),
+                )
+                .register_animation(
+                    "jump_beg".into(),
+                    AnimationBuilder::new()
+                        .change_wait_time(4)
+                        .no_repeat()
+                        .next_animation("jump".into())
+                        .register_images_index((65..69).collect()),
+                )
+                .register_animation(
+                    "jump".into(),
+                    AnimationBuilder::new()
+                        .change_wait_time(4)
+                        .no_repeat()
+                        .register_images_index((69..70).collect()),
+                )
+                .register_animation(
+                    "jump_end".into(),
+                    AnimationBuilder::new()
+                        .change_wait_time(4)
+                        .no_repeat()
+                        .register_images_index((70..72).collect()),
+                )
+                .build(),
+        )
         .build();
 }
 
