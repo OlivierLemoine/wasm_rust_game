@@ -7,11 +7,12 @@ logic! {
         mut Transform as transforms
     ]
     Does [
-        Foreach;
-        Foreach [
-            mut transforms as t,
-        ] => {
-
+        Foreach [mut transforms as t] => {
+            t.position.x = 2.0;
+            // t.position.x = 2;
+            a := 2;
+            a = 3;
+            print a;
         };
     ]
 }

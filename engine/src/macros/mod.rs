@@ -1,10 +1,5 @@
-use crate::builder::*;
-use crate::components::*;
-use math::Vec2;
-use specs::prelude::*;
-
 #[macro_export]
-macro_rules! object {
+macro_rules! object_builder {
     (
         Declare $struct_name:ident
         With [ $( { $($component_list:tt)* } )* ]
@@ -12,14 +7,14 @@ macro_rules! object {
         mod $struct_name{
             use super::*;
             pub fn new(world: &mut World) -> EntityBuilder {
-                world.create_entity()$( .with( unfold_component!( $($component_list)* ) ) )*
+                world.create_entity()$( .with( __unfold_component!( $($component_list)* ) ) )*
             }
         }
     };
 }
 
 #[macro_export]
-macro_rules! unfold_component {
+macro_rules! __unfold_component {
     (Transform) => {
         Transform::default()
     };
@@ -45,29 +40,32 @@ macro_rules! logic {
         struct $struct_name;
         impl<'a> System<'a> for $struct_name {
             type SystemData = (
-                $(get_storage!($mutability $component),)*
+                $(__get_storage!($mutability $component),)*
             );
             fn run(&mut self, (
-                $(get_name!($mutability $var),)*
+                $(__get_name!($mutability $var),)*
             ): Self::SystemData) {
-                analyse_lang!{$($code)*}
+                __analyse_lang!{$($code)*}
             }
         }
     };
 }
 
 #[macro_export]
-macro_rules! get_storage {
+macro_rules! __get_storage {
     (static $storage:ident) => {
-        WriteStorage<'a, $storage>
+        ReadStorage<'a, $storage>
     };
     (mut $storage:ident) => {
         WriteStorage<'a, $storage>
     };
+    (global $storage:ident) => {
+        Write<'a, $storage>
+    }
 }
 
 #[macro_export]
-macro_rules! get_name {
+macro_rules! __get_name {
     (mut $var:ident) => {
         mut $var
     };
@@ -77,10 +75,7 @@ macro_rules! get_name {
 }
 
 #[macro_export]
-macro_rules! analyse_lang {
-    ($($rest:tt)*) => {
-        stringify!($($rest)*);
-    };
+macro_rules! __analyse_lang {
     (Foreach [
         $($mutability:ident $var:ident as $local_var:ident),*
     ] => { $($code:tt)* }; $($rest:tt)*) => {
@@ -89,8 +84,21 @@ macro_rules! analyse_lang {
         ) in (
             $(&$mutability $var),*
         ).join(){
-            analyse_lang!{$($code)*}
+            __analyse_lang!{$($code)*}
         }
-        analyse_lang!{$($rest)*}
+        __analyse_lang!{$($rest)*}
     };
+    ($var:ident := $value:expr; $($rest:tt)*) => {
+        let mut $var = $value;
+        __analyse_lang!{$($rest)*}
+    };
+    ($var:tt $(.$attr:tt)* = $value:expr; $($rest:tt)*) => {
+        $var $(.$attr)* = $value;
+        __analyse_lang!{$($rest)*}
+    };
+    (print $var:ident; $($rest:tt)*) => {
+        println!("{}", $var);
+        __analyse_lang!{$($rest)*}
+    };
+    () => {};
 }
