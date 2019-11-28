@@ -4,33 +4,16 @@ use math::Vec2;
 use specs::prelude::*;
 
 #[macro_export]
-macro_rules! logic {
+macro_rules! object {
     (
         Declare $struct_name:ident
-        With [ $( { $component_mut:ident $component_name:ident is $($component_list:tt)* } )* ]
+        With [ $( { $($component_list:tt)* } )* ]
     ) => {
-        #[derive(Default)]
-        struct $struct_name;
-        impl $struct_name {
+        mod $struct_name{
+            use super::*;
             pub fn new(world: &mut World) -> EntityBuilder {
                 world.create_entity()$( .with( unfold_component!( $($component_list)* ) ) )*
             }
-        }
-        impl<'a> System<'a> for $struct_name {
-            type SystemData = (
-                $(get_storage!($($component_mut $component_list)*),)*
-                // Read<'a, engine::KeyPress>,
-                // WriteStorage<'a, Transform>,
-                // WriteStorage<'a, RigidBody>,
-                // WriteStorage<'a, Player>,
-                // WriteStorage<'a, Sprite>,
-            );
-            fn run(
-                &mut self,
-                (
-                    $(mut $component_name,)*
-                ): Self::SystemData,
-            ) {}
         }
     };
 }
@@ -49,6 +32,19 @@ macro_rules! unfold_component {
     };
 }
 
+#[macro_export]
+macro_rules! logic {
+    (
+        // $($mutability:ident, )*
+    ) => {
+        struct $struct_name;
+        impl<'a> System<'a> for $struct_name {
+            type SystemData = ();
+            fn run(&mut self, (): Self::SystemData) {}
+        }
+    };
+}
+
 macro_rules! get_storage {
     (static $storage:tt $($rest:tt)*) => {
         WriteStorage<'a, $storage>
@@ -58,10 +54,10 @@ macro_rules! get_storage {
     };
 }
 
-logic! {
+object! {
     Declare Test
     With [
-        { mut transforms is Transform offset=[0 0] }
-        { static collisions is Collisions }
+        { Transform offset=[0 0] }
+        { Collisions }
     ]
 }
