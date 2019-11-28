@@ -39,7 +39,7 @@ macro_rules! logic {
         Uses [
             $($mutability:ident $component:ident as $var:ident)*
         ]
-        Does [$($code:tt);*]
+        Does [$($code:tt)*]
     ) => {
         struct $struct_name;
         impl<'a> System<'a> for $struct_name {
@@ -49,7 +49,7 @@ macro_rules! logic {
             fn run(&mut self, (
                 $(get_name!($mutability $var),)*
             ): Self::SystemData) {
-                analyse_lang!{$($code:tt);*}
+                analyse_lang!{$($code)*}
             }
         }
     };
@@ -74,10 +74,21 @@ macro_rules! get_name {
 }
 
 macro_rules! analyse_lang {
-    () => {};
+    ($($rest:tt)*) => {
+        stringify!($($rest)*);
+    };
     (Foreach [
-        $($var:ident as $local_var:ident)*
-    ] => ) => {};
+        $($mutability:ident $var:ident as $local_var:ident),*
+    ] => { $($code:tt)* }; $($rest:tt)*) => {
+        for (
+            $($local_var),*
+        ) in (
+            $(&$mutability $var),*
+        ).join(){
+            analyse_lang!{$($code)*}
+        }
+        analyse_lang!{$($rest)*}
+    };
 }
 
 object! {
@@ -91,9 +102,13 @@ object! {
 logic! {
     System TestSystem
     Uses [
-        mut Transform as transform
+        mut Transform as transforms
     ]
     Does [
+        Foreach [
+            mut transforms as t,
+        ] => {
 
+        };
     ]
 }
