@@ -20,7 +20,6 @@ macro_rules! logic {
             type SystemData = (
                 $(get_storage!($($component_mut $component_list)*),)*
                 // Read<'a, engine::KeyPress>,
-                // ReadStorage<'a, Collisions>,
                 // WriteStorage<'a, Transform>,
                 // WriteStorage<'a, RigidBody>,
                 // WriteStorage<'a, Player>,
@@ -45,6 +44,9 @@ macro_rules! unfold_component {
             .position(Vec2::from(($x as f64, $y as f64)))
             .build()
     };
+    (Collisions) => {
+        Collisions::default()
+    };
 }
 
 macro_rules! get_storage {
@@ -60,5 +62,6 @@ logic! {
     Declare Test
     With [
         { mut transforms is Transform offset=[0 0] }
+        { static collisions is Collisions }
     ]
 }
