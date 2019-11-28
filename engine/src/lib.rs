@@ -6,6 +6,12 @@ mod physics;
 mod render;
 mod transform;
 
+pub mod prelude {
+    pub use crate::builder::*;
+    pub use crate::components::*;
+    pub use crate::types::*;
+    pub use specs::prelude::*;
+}
 pub mod types {
     pub use crate::collider::ColliderType;
 }
@@ -31,10 +37,6 @@ pub use render::{color::Color, image::Image};
 pub use specs;
 
 use specs::prelude::*;
-
-pub mod prelude {
-    pub use specs::prelude::*;
-}
 
 pub struct Game {
     pub world: specs::shred::World,
