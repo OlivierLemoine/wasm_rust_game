@@ -5,7 +5,6 @@ use engine::specs::prelude::*;
 use engine::{builder::*, components::*, types::*};
 use helper::{body, request_animation_frame};
 use js_sys::*;
-// use log::*;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
