@@ -1,8 +1,7 @@
 mod draw;
 mod helper;
 
-use engine::specs::prelude::*;
-use engine::{builder::*, components::*, types::*};
+use engine::prelude::*;
 use helper::{body, request_animation_frame};
 use js_sys::*;
 use std::cell::RefCell;
