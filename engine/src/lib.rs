@@ -1,6 +1,7 @@
 mod camera;
 mod collider;
 mod event;
+mod macros;
 mod physics;
 mod render;
 mod transform;
