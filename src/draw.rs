@@ -1,9 +1,10 @@
+use crate::helper::document;
 use engine::components::{Collider, Sprite, Transform};
 use engine::specs::prelude::*;
-use engine::{Camera, Image};
+use engine::Camera;
 use js_sys::*;
 use lazy_static::*;
-use log::*;
+// use log::*;
 use std::f64;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::{Clamped, JsCast};
@@ -16,12 +17,11 @@ lazy_static! {
 static mut CANVAS_WIDTH: f64 = 1.0;
 static mut CANVAS_HEIGHT: f64 = 1.0;
 
-#[wasm_bindgen]
-pub fn resize() {
-    let document = web_sys::window().unwrap().document().unwrap();
-    let canvas = document.get_element_by_id("game").unwrap();
-    let canvas: web_sys::HtmlCanvasElement =
-        canvas.dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
+pub fn resize() -> Result<(), JsValue> {
+    let canvas = document()?
+        .get_element_by_id("game")
+        .ok_or(JsValue::from(Error::new(&"No canvas with id game")))?;
+    let canvas: web_sys::HtmlCanvasElement = canvas.dyn_into::<web_sys::HtmlCanvasElement>()?;
 
     let width = canvas.width() as f64;
     let height = canvas.height() as f64;
@@ -30,6 +30,8 @@ pub fn resize() {
         CANVAS_WIDTH = width;
         CANVAS_HEIGHT = height;
     }
+
+    Ok(())
 }
 
 pub struct DebugCollider;

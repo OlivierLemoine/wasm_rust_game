@@ -1,4 +1,3 @@
-use std::cmp::Ordering;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 #[derive(Default, Clone, Copy, Debug, PartialEq)]

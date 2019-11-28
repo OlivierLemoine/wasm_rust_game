@@ -5,7 +5,7 @@ use engine::specs::prelude::*;
 use engine::{builder::*, components::*, types::*};
 use helper::{body, request_animation_frame};
 use js_sys::*;
-use log::*;
+// use log::*;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
@@ -149,6 +149,11 @@ impl<'a> System<'a> for TestMove {
             }
         }
     }
+}
+
+#[wasm_bindgen]
+pub fn resize() -> Result<(), JsValue> {
+    draw::resize()
 }
 
 #[wasm_bindgen]
