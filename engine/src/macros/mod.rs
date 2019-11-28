@@ -35,29 +35,57 @@ macro_rules! unfold_component {
 #[macro_export]
 macro_rules! logic {
     (
-        // $($mutability:ident, )*
+        System $struct_name:ident
+        Uses [
+            $($mutability:ident $component:ident as $var:ident)*
+        ]
+        Does $code:block
     ) => {
         struct $struct_name;
         impl<'a> System<'a> for $struct_name {
-            type SystemData = ();
-            fn run(&mut self, (): Self::SystemData) {}
+            type SystemData = (
+                $(get_storage!($mutability $component),)*
+            );
+            fn run(&mut self, (
+                $(get_name!($mutability $var),)*
+            ): Self::SystemData) {
+            }
         }
     };
 }
 
 macro_rules! get_storage {
-    (static $storage:tt $($rest:tt)*) => {
+    (static $storage:ident) => {
         WriteStorage<'a, $storage>
     };
-    (mut $storage:tt $($rest:tt)*) => {
+    (mut $storage:ident) => {
         WriteStorage<'a, $storage>
     };
 }
 
+macro_rules! get_name {
+    (mut $var:ident) => {
+        mut $var
+    };
+    (static $var:ident) => {
+        $var
+    }
+}
+
 object! {
-    Declare Test
+    Declare test
     With [
         { Transform offset=[0 0] }
         { Collisions }
     ]
+}
+
+logic! {
+    System TestSystem
+    Uses [
+        mut Transform as transform
+    ]
+    Does {
+
+    }
 }
