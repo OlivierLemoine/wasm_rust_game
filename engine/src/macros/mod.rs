@@ -18,6 +18,7 @@ macro_rules! object {
     };
 }
 
+#[macro_export]
 macro_rules! unfold_component {
     (Transform) => {
         Transform::default()
@@ -55,6 +56,7 @@ macro_rules! logic {
     };
 }
 
+#[macro_export]
 macro_rules! get_storage {
     (static $storage:ident) => {
         WriteStorage<'a, $storage>
@@ -64,6 +66,7 @@ macro_rules! get_storage {
     };
 }
 
+#[macro_export]
 macro_rules! get_name {
     (mut $var:ident) => {
         mut $var
@@ -73,6 +76,7 @@ macro_rules! get_name {
     }
 }
 
+#[macro_export]
 macro_rules! analyse_lang {
     ($($rest:tt)*) => {
         stringify!($($rest)*);
@@ -89,26 +93,4 @@ macro_rules! analyse_lang {
         }
         analyse_lang!{$($rest)*}
     };
-}
-
-object! {
-    Declare test
-    With [
-        { Transform offset=[0 0] }
-        { Collisions }
-    ]
-}
-
-logic! {
-    System TestSystem
-    Uses [
-        mut Transform as transforms
-    ]
-    Does [
-        Foreach [
-            mut transforms as t,
-        ] => {
-
-        };
-    ]
 }

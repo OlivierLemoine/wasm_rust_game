@@ -32,6 +32,10 @@ pub use specs;
 
 use specs::prelude::*;
 
+pub mod prelude {
+    pub use specs::prelude::*;
+}
+
 pub struct Game {
     pub world: specs::shred::World,
     physics: physics::PhysicsSystem,
