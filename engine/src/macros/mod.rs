@@ -88,7 +88,7 @@ macro_rules! __analyse_lang {
         }
         __analyse_lang!{$($rest)*}
     };
-    ($var:ident := $value:expr; $($rest:tt)*) => {
+    ($var:ident = $value:expr; $($rest:tt)*) => {
         let mut $var = $value;
         __analyse_lang!{$($rest)*}
     };
