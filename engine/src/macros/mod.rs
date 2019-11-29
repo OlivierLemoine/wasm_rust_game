@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use std::fmt;
 
 #[macro_export]
 macro_rules! object_builder {
@@ -193,5 +194,27 @@ impl From<&i32> for Var__ {
 impl From<&Var__> for Var__ {
     fn from(v: &Var__) -> Self {
         v.clone()
+    }
+}
+impl fmt::Display for Var__ {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let res = match self {
+            Var__::Null => format!("null"),
+            Var__::Number(n) => format!("{}", n),
+            Var__::Array(v) => format!(
+                "[{}]",
+                v.iter()
+                    .map(|v| format!("{}", v))
+                    .fold(String::new(), |a, c| format!("{}{},", a, c))
+            ),
+
+            Var__::Object(t) => format!(
+                "{{{}}}",
+                t.iter()
+                    .map(|(key, value)| format!("{}: {}", key, value))
+                    .fold(String::new(), |a, c| format!("{}{},", a, c))
+            ),
+        };
+        write!(f, "{}", &res)
     }
 }
