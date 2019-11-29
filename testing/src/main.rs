@@ -143,6 +143,22 @@ impl Cast<i32> for Var__ {
         }
     }
 }
+impl Cast<bool> for Var__ {
+    fn cast(&self) -> bool {
+        match self {
+            Var__::Bool(b) => *b,
+            _ => panic!(),
+        }
+    }
+}
+impl Cast<String> for Var__ {
+    fn cast(&self) -> String {
+        match self {
+            Var__::String(s) => s.clone(),
+            _ => panic!(),
+        }
+    }
+}
 
 #[macro_export]
 macro_rules! lang {
