@@ -18,10 +18,18 @@ logic! {
 
 fn main() {
     __analyse_lang! {
+        // a = {
+        //     a: []
+        // };
+
         a = {
-            a: 2
+            a: {
+                a: 2
+            }
         };
 
-        print a;
+        // print a;
+        // print b;
+        // a.a = 3;
     }
 }

@@ -125,21 +125,24 @@ macro_rules! __parse_array {
 
 #[macro_export]
 macro_rules! __parse_object {
-    ($($key:ident : $value:expr),*) => {
+    ($($key:ident : $($value:tt)*),*) => {
         Var__::Null
             $(
-                .obj__(String::from(stringify!($key)),  &__parse_value!($value))
+                .obj__(String::from(stringify!($key)),  &__parse_value!($($value)*))
             )*
     };
-    ($($v:tt)*) => {
-        stringify!($($v)*)
+    () => {
+        Var__::Null
     }
 }
 
 #[macro_export]
 macro_rules! __parse_value {
-    ([$($value:tt),*]) => {
-        __parse_array!($($value),*)
+    ([$($value:tt)*]) => {
+        __parse_array!($($value)*)
+    };
+    ({$($value:tt)*}) => {
+        __parse_object!($($value)*)
     };
     ($value:expr) => {
         Var__::from(&$value);
