@@ -138,6 +138,7 @@ dependencies = [
  "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.1.0",
  "math 0.1.0",
+ "script_lang 0.1.0",
  "specs 0.15.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -386,6 +387,10 @@ dependencies = [
 name = "scopeguard"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "script_lang"
+version = "0.1.0"
 
 [[package]]
 name = "semver"
