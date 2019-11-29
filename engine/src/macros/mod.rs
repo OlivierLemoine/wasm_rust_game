@@ -111,6 +111,18 @@ macro_rules! __analyse_lang {
         let mut $var = Var__::from(&$value);
         __analyse_lang!{$($rest)*}
     };
+    ($var:tt $(.$attr:tt)* = { $($value:tt)* }; $($rest:tt)*) => {
+        $var$(.get_nested__(String::from(stringify!($attr))))*.update_nested__(&__parse_object!($($value)*));
+        __analyse_lang!{$($rest)*}
+    };
+    ($var:tt $(.$attr:tt)* = [ $($value:tt)* ]; $($rest:tt)*) => {
+        $var$(.get_nested__(String::from(stringify!($attr))))*.update_nested__(&__parse_array!($($value)*));
+        __analyse_lang!{$($rest)*}
+    };
+    ($var:tt $(.$attr:tt)* = $var2:ident $(.$attr2:ident)*; $($rest:tt)*) => {
+        $var$(.get_nested__(String::from(stringify!($attr))))*.update_nested__(&$var2$(.get_nested__(String::from(stringify!($attr2))))*);
+        __analyse_lang!{$($rest)*}
+    };
     ($var:tt $(.$attr:tt)* = $value:expr; $($rest:tt)*) => {
         $var$(.get_nested__(String::from(stringify!($attr))))*.update_nested__(&Var__::from(&$value));
         __analyse_lang!{$($rest)*}
