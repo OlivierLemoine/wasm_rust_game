@@ -94,12 +94,16 @@ macro_rules! __analyse_lang {
         println!("{}", $var);
         __analyse_lang!{$($rest)*}
     };
+    ($var:ident = { $($value:tt),* }; $($rest:tt)*) => {
+        let mut $var = __parse_array!($($value),*);
+        __analyse_lang!{$($rest)*}
+    };
     ($var:ident = [ $($value:tt),* ]; $($rest:tt)*) => {
         let mut $var = __parse_array!($($value),*);
         __analyse_lang!{$($rest)*}
     };
     ($var:ident = $value:expr; $($rest:tt)*) => {
-        let mut $var = Var__::Number($value as f64);
+        let mut $var = Var__::from(&$value);
         __analyse_lang!{$($rest)*}
     };
     ($var:tt $(.$attr:tt)* = $value:expr; $($rest:tt)*) => {
@@ -124,16 +128,42 @@ macro_rules! __parse_value {
         __parse_array!($($value),*)
     };
     ($value:expr) => {
-        Var__::Number($value as f64)
+        Var__::from(&$value);
     };
     () => {
         Var__::Null
     };
 }
 
+#[derive(Clone)]
 pub enum Var__ {
     Null,
     Number(f64),
     Object(BTreeMap<String, Var__>),
     Array(Vec<Var__>),
+}
+impl From<&f64> for Var__ {
+    fn from(v: &f64) -> Self {
+        Var__::Number(*v as f64)
+    }
+}
+impl From<&f32> for Var__ {
+    fn from(v: &f32) -> Self {
+        Var__::Number(*v as f64)
+    }
+}
+impl From<&i64> for Var__ {
+    fn from(v: &i64) -> Self {
+        Var__::Number(*v as f64)
+    }
+}
+impl From<&i32> for Var__ {
+    fn from(v: &i32) -> Self {
+        Var__::Number(*v as f64)
+    }
+}
+impl From<&Var__> for Var__ {
+    fn from(v: &Var__) -> Self {
+        v.clone()
+    }
 }
