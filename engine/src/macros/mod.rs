@@ -155,6 +155,7 @@ macro_rules! __parse_value {
 #[derive(Clone)]
 pub enum Var__ {
     Null,
+    String(String),
     Number(f64),
     Object(BTreeMap<String, Var__>),
     Array(Vec<Var__>),
@@ -194,6 +195,11 @@ impl From<&i32> for Var__ {
         Var__::Number(*v as f64)
     }
 }
+impl From<&&str> for Var__ {
+    fn from(s: &&str) -> Self {
+        Var__::String(String::from(*s))
+    }
+}
 impl From<&Var__> for Var__ {
     fn from(v: &Var__) -> Self {
         v.clone()
@@ -203,6 +209,7 @@ impl fmt::Display for Var__ {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let res = match self {
             Var__::Null => format!("null"),
+            Var__::String(s) => format!("\"{}\"", s),
             Var__::Number(n) => format!("{}", n),
             Var__::Array(v) => format!(
                 "[{}]",
