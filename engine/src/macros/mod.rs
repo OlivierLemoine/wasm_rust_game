@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 #[macro_export]
 macro_rules! object_builder {
     (
@@ -92,12 +94,12 @@ macro_rules! __analyse_lang {
         println!("{}", $var);
         __analyse_lang!{$($rest)*}
     };
-    ($var:ident = [ $($value:expr),* ]; $($rest:tt)*) => {
-        let mut $var = vec![$($value),*];
+    ($var:ident = [ $($value:tt),* ]; $($rest:tt)*) => {
+        let mut $var = __parse_array!($($value),*);
         __analyse_lang!{$($rest)*}
     };
     ($var:ident = $value:expr; $($rest:tt)*) => {
-        let mut $var = $value;
+        let mut $var = Var__::Number($value as f64);
         __analyse_lang!{$($rest)*}
     };
     ($var:tt $(.$attr:tt)* = $value:expr; $($rest:tt)*) => {
@@ -105,4 +107,33 @@ macro_rules! __analyse_lang {
         __analyse_lang!{$($rest)*}
     };
     () => {};
+}
+
+#[macro_export]
+macro_rules! __parse_array {
+    ($($value:tt),*) => {
+        Var__::Array(vec![
+            $(__parse_value!($value)),*
+        ])
+    };
+}
+
+#[macro_export]
+macro_rules! __parse_value {
+    ([$($value:tt),*]) => {
+        __parse_array!($($value),*)
+    };
+    ($value:expr) => {
+        Var__::Number($value as f64)
+    };
+    () => {
+        Var__::Null
+    };
+}
+
+pub enum Var__ {
+    Null,
+    Number(f64),
+    Object(BTreeMap<String, Var__>),
+    Array(Vec<Var__>),
 }
