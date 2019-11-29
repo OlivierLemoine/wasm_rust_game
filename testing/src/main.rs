@@ -21,11 +21,9 @@ pub struct Test{
 }
 
 fn main() {
-    let mut a = Test{
-        a: 0,
+    lang!{
+        test = 2;
+        oui;
+        bj;
     };
-    __analyse_lang! {
-        // b = a.a;
-        ext a.a = 3;
-    }
 }
