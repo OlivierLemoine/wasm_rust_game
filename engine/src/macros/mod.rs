@@ -181,15 +181,6 @@ macro_rules! __parse_value {
     };
 }
 
-#[macro_export]
-macro_rules! lang {
-    ($line:stmt;$($rest:tt)*) => {
-        stringify!($line);
-        lang!($($rest)*)
-    };
-    () => {};
-}
-
 pub trait Cast<T> {
     fn cast(&self) -> T;
 }

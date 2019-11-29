@@ -1,29 +1,45 @@
-use engine::prelude::*;
-use engine::*;
+// use engine::prelude::*;
+// use engine::*;
 
-// logic! {
-//     System TestSystem
-//     Uses [
-//         mut Transform as transforms
-//     ]
-//     Does [
-//         Foreach [mut transforms as t] => {
-//             // t.position.x = 2.0;
-//             // a = 2;
-//             // a = 3;
-//             // print a;
-//         };
-//     ]
-// }
+#[macro_export]
+macro_rules! lang {
+    ($($rest:tt)*) => {
+        __get_line!{[] $($rest)*}
+    };
+    () => {};
+}
 
-pub struct Test{
-    a: i32,
+macro_rules! step {
+    ($($rest:tt)*) => {
+        stringify!($($rest)*);
+        __get_line!{$($rest)*}
+    };
+}
+
+macro_rules! __get_line {
+    ([$($curr_line:tt)*] ; $($rest:tt)*) => {
+        __parse_line!($($curr_line)*);
+        __get_line!{[] $($rest)*}
+    };
+    ([$($curr_line:tt)*] $token:tt $($rest:tt)*) => {
+        __get_line!{[$($curr_line)* $token] $($rest)*}
+    };
+    ([]) => {};
+}
+
+#[macro_export]
+macro_rules! __parse_line {
+    ($var:tt = $($rest:tt)*) => {
+        let $var = 2
+    };
+    ($($rest:tt)*) => {
+        stringify!($($rest)*)
+    };
 }
 
 fn main() {
     lang!{
         test = 2;
-        oui;
-        bj;
-    };
+        a = 3;
+    }
 }
