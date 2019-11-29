@@ -88,6 +88,10 @@ macro_rules! __analyse_lang {
         }
         __analyse_lang!{$($rest)*}
     };
+    (print $var:ident; $($rest:tt)*) => {
+        println!("{}", $var);
+        __analyse_lang!{$($rest)*}
+    };
     ($var:ident = $value:expr; $($rest:tt)*) => {
         let mut $var = $value;
         __analyse_lang!{$($rest)*}
@@ -96,9 +100,13 @@ macro_rules! __analyse_lang {
         $var $(.$attr)* = $value;
         __analyse_lang!{$($rest)*}
     };
-    (print $var:ident; $($rest:tt)*) => {
-        println!("{}", $var);
-        __analyse_lang!{$($rest)*}
-    };
     () => {};
+}
+
+#[macro_export]
+macro_rules! __expand_value {
+    ({ $($key:ident : $value:expr),* }) => {};
+    ($value:expr) => {
+        $value
+    };
 }
