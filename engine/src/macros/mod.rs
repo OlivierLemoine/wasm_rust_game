@@ -103,14 +103,22 @@ macro_rules! __analyse_lang {
         let mut $var = __parse_array!($($value)*);
         __analyse_lang!{$($rest)*}
     };
+    ($var:ident = $var2:ident $(.$attr:ident)*; $($rest:tt)*) => {
+        let mut $var = $var2$(.get_nested__(String::from(stringify!($attr))))*;
+        __analyse_lang!{$($rest)*}
+    };
     ($var:ident = $value:expr; $($rest:tt)*) => {
         let mut $var = Var__::from(&$value);
         __analyse_lang!{$($rest)*}
     };
-    ($var:tt $(.$attr:tt)* = $value:expr; $($rest:tt)*) => {
-        $var $(.$attr)* = __expand_value!($value);
-        __analyse_lang!{$($rest)*}
-    };
+    // ($var:tt $(.$attr:tt)* = $value:expr; $($rest:tt)*) => {
+    //     $var$(.get_nested__(String::from(stringify!($attr))))* = &Var__::from(&$value);
+    //     __analyse_lang!{$($rest)*}
+    // };
+    // (ext $var:tt $(.$attr:tt)* = $value:expr; $($rest:tt)*) => {
+    //     $var $(.$attr)* = __expand_value!($value);
+    //     __analyse_lang!{$($rest)*}
+    // };
     () => {};
 }
 
@@ -147,9 +155,6 @@ macro_rules! __parse_value {
     ($value:expr) => {
         Var__::from(&$value);
     };
-    () => {
-        Var__::Null
-    };
 }
 
 #[derive(Clone)]
@@ -173,6 +178,17 @@ impl Var__ {
             }
         };
         self
+    }
+    pub fn get_nested__(&mut self, key: String) -> &mut Var__ {
+        match self {
+            Var__::Object(tree) => {
+                if !tree.contains_key(&key) {
+                    tree.insert(key.clone(), Var__::Null);
+                }
+                tree.get_mut(&key).unwrap()
+            }
+            _ => panic!(),
+        }
     }
 }
 impl From<&f64> for Var__ {

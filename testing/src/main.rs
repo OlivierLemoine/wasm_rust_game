@@ -18,10 +18,13 @@ logic! {
 
 fn main() {
     __analyse_lang! {
+        // ext t.position = 2;
         a = {
             a: "test"
         };
 
-        print a;
+        b = a.a;
+
+        // print b;
     }
 }
