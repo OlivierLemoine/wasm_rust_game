@@ -16,17 +16,16 @@ use engine::*;
 //     ]
 // }
 
-fn main() {
-    __analyse_lang! {
-        // ext t.position = 2;
-        a = {
-            a: "test"
-        };
+pub struct Test{
+    a: i32,
+}
 
+fn main() {
+    let mut a = Test{
+        a: 0,
+    };
+    __analyse_lang! {
         // b = a.a;
-        a.a = {
-            b: "test"
-        };
-        // a = 2;
+        ext a.a = 3;
     }
 }

@@ -127,10 +127,22 @@ macro_rules! __analyse_lang {
         $var$(.get_nested__(String::from(stringify!($attr))))*.update_nested__(&Var__::from(&$value));
         __analyse_lang!{$($rest)*}
     };
-    // (ext $var:tt $(.$attr:tt)* = $value:expr; $($rest:tt)*) => {
-    //     $var $(.$attr)* = __expand_value!($value);
-    //     __analyse_lang!{$($rest)*}
-    // };
+    (ext $var:tt $(.$attr:tt)* = { $($value:tt)* }; $($rest:tt)*) => {
+        $var $(.$attr)* = __parse_object!($($value)*).cast();
+        __analyse_lang!{$($rest)*}
+    };
+    (ext $var:tt $(.$attr:tt)* = [ $($value:tt)* ]; $($rest:tt)*) => {
+        $var $(.$attr)* = __parse_array!($($value)*).cast();
+        __analyse_lang!{$($rest)*}
+    };
+    (ext $var:tt $(.$attr:tt)* = $var2:ident $(.$attr2:ident)*; $($rest:tt)*) => {
+        $var $(.$attr)* = $var2$(.get_nested__(String::from(stringify!($attr2))))*.cast();
+        __analyse_lang!{$($rest)*}
+    };
+    (ext $var:tt $(.$attr:tt)* = $value:expr; $($rest:tt)*) => {
+        $var $(.$attr)* = Var__::from(&$value).cast();
+        __analyse_lang!{$($rest)*}
+    };
     () => {};
 }
 
@@ -167,6 +179,10 @@ macro_rules! __parse_value {
     ($value:expr) => {
         Var__::from(&$value);
     };
+}
+
+pub trait Cast<T> {
+    fn cast(&self) -> T;
 }
 
 #[derive(Clone)]
@@ -257,5 +273,38 @@ impl fmt::Display for Var__ {
             ),
         };
         write!(f, "{}", &res)
+    }
+}
+
+impl Cast<f64> for Var__ {
+    fn cast(&self) -> f64 {
+        match self {
+            Var__::Number(v) => *v,
+            _ => panic!(),
+        }
+    }
+}
+impl Cast<f32> for Var__ {
+    fn cast(&self) -> f32 {
+        match self {
+            Var__::Number(v) => *v as f32,
+            _ => panic!(),
+        }
+    }
+}
+impl Cast<i64> for Var__ {
+    fn cast(&self) -> i64 {
+        match self {
+            Var__::Number(v) => *v as i64,
+            _ => panic!(),
+        }
+    }
+}
+impl Cast<i32> for Var__ {
+    fn cast(&self) -> i32 {
+        match self {
+            Var__::Number(v) => *v as i32,
+            _ => panic!(),
+        }
     }
 }
