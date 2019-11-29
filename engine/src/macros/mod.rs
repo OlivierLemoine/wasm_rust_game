@@ -92,21 +92,17 @@ macro_rules! __analyse_lang {
         println!("{}", $var);
         __analyse_lang!{$($rest)*}
     };
+    ($var:ident = [ $($value:expr),* ]; $($rest:tt)*) => {
+        let mut $var = vec![$($value),*];
+        __analyse_lang!{$($rest)*}
+    };
     ($var:ident = $value:expr; $($rest:tt)*) => {
         let mut $var = $value;
         __analyse_lang!{$($rest)*}
     };
     ($var:tt $(.$attr:tt)* = $value:expr; $($rest:tt)*) => {
-        $var $(.$attr)* = $value;
+        $var $(.$attr)* = __expand_value!($value);
         __analyse_lang!{$($rest)*}
     };
     () => {};
-}
-
-#[macro_export]
-macro_rules! __expand_value {
-    ({ $($key:ident : $value:expr),* }) => {};
-    ($value:expr) => {
-        $value
-    };
 }
