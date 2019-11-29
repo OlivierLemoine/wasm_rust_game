@@ -94,12 +94,12 @@ macro_rules! __analyse_lang {
         println!("{}", $var);
         __analyse_lang!{$($rest)*}
     };
-    ($var:ident = { $($value:tt),* }; $($rest:tt)*) => {
-        let mut $var = __parse_array!($($value),*);
+    ($var:ident = { $($value:tt)* }; $($rest:tt)*) => {
+        let mut $var = __parse_object!($($value)*);
         __analyse_lang!{$($rest)*}
     };
-    ($var:ident = [ $($value:tt),* ]; $($rest:tt)*) => {
-        let mut $var = __parse_array!($($value),*);
+    ($var:ident = [ $($value:tt)* ]; $($rest:tt)*) => {
+        let mut $var = __parse_array!($($value)*);
         __analyse_lang!{$($rest)*}
     };
     ($var:ident = $value:expr; $($rest:tt)*) => {
@@ -123,6 +123,19 @@ macro_rules! __parse_array {
 }
 
 #[macro_export]
+macro_rules! __parse_object {
+    ($($key:ident : $value:expr),*) => {
+        Var__::Null
+            $(
+                .obj__(String::from(stringify!($key)),  &__parse_value!($value))
+            )*
+    };
+    ($($v:tt)*) => {
+        stringify!($($v)*)
+    }
+}
+
+#[macro_export]
 macro_rules! __parse_value {
     ([$($value:tt),*]) => {
         __parse_array!($($value),*)
@@ -141,6 +154,21 @@ pub enum Var__ {
     Number(f64),
     Object(BTreeMap<String, Var__>),
     Array(Vec<Var__>),
+}
+impl Var__ {
+    pub fn obj__(mut self, key: String, val: &Var__) -> Var__ {
+        match &mut self {
+            Var__::Object(tree) => {
+                tree.insert(key, val.clone());
+            }
+            _ => {
+                let mut tree = BTreeMap::new();
+                tree.insert(key, val.clone());
+                self = Var__::Object(tree);
+            }
+        };
+        self
+    }
 }
 impl From<&f64> for Var__ {
     fn from(v: &f64) -> Self {
