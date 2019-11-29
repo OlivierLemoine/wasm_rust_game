@@ -24,7 +24,6 @@ fn main() {
         };
 
         b = a.a;
-
-        // print b;
+        a.a = 2;
     }
 }

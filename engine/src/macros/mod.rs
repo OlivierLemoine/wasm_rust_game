@@ -111,10 +111,10 @@ macro_rules! __analyse_lang {
         let mut $var = Var__::from(&$value);
         __analyse_lang!{$($rest)*}
     };
-    // ($var:tt $(.$attr:tt)* = $value:expr; $($rest:tt)*) => {
-    //     $var$(.get_nested__(String::from(stringify!($attr))))* = &Var__::from(&$value);
-    //     __analyse_lang!{$($rest)*}
-    // };
+    ($var:tt $(.$attr:tt)* = $value:expr; $($rest:tt)*) => {
+        $var$(.get_nested__(String::from(stringify!($attr))))*.update_nested__(&Var__::from(&$value));
+        __analyse_lang!{$($rest)*}
+    };
     // (ext $var:tt $(.$attr:tt)* = $value:expr; $($rest:tt)*) => {
     //     $var $(.$attr)* = __expand_value!($value);
     //     __analyse_lang!{$($rest)*}
@@ -189,6 +189,9 @@ impl Var__ {
             }
             _ => panic!(),
         }
+    }
+    pub fn update_nested__(&mut self, val: &Var__) {
+        std::mem::replace(self, val.clone());
     }
 }
 impl From<&f64> for Var__ {
