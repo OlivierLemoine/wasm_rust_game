@@ -11,6 +11,7 @@ pub mod prelude {
     pub use crate::components::*;
     pub use crate::macros::*;
     pub use crate::types::*;
+    pub use crate::{__get_name, __get_storage, logic};
     pub use script_lang::*;
     pub use specs::prelude::*;
 }

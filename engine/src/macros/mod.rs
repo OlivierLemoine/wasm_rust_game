@@ -35,19 +35,22 @@ macro_rules! logic {
     (
         System $struct_name:ident
         Uses [
-            $($mutability:ident $component:ident as $var:ident)*
+            // $($mutability:ident $component:ident as $var:ident),*
+            $($component:ident as $var:ident),*
         ]
         Does [$($code:tt)*]
     ) => {
         struct $struct_name;
         impl<'a> System<'a> for $struct_name {
             type SystemData = (
-                $(__get_storage!($mutability $component),)*
+                $(WriteStorage<'a, $component>,)*
             );
-            fn run(&mut self, (
-                $(__get_name!($mutability $var),)*
-            ): Self::SystemData) {
-                lang!{$($code)*}
+            fn run(&mut self, sys__: Self::SystemData) {
+                for (
+                    $($var,)*
+                ) in sys__.join() {
+                    lang!{$($code)*}
+                }
             }
         }
     };
@@ -75,3 +78,16 @@ macro_rules! __get_name {
         $var
     }
 }
+
+// logic! {
+//     System TestSys
+//     Uses [
+//         Collisions as c,
+//         Transform as t,
+//         RigidBody as rb,
+//         Player as p,
+//         Sprite as s
+//     ]
+//     Does [
+//     ]
+// }

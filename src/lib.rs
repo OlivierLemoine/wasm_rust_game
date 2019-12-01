@@ -53,6 +53,19 @@ impl Component for Player {
     type Storage = DenseVecStorage<Self>;
 }
 
+logic! {
+    System TestSys
+    Uses [
+        static Collisions as c,
+        mut Transform as t,
+        mut RigidBody as rb,
+        mut Player as p,
+        mut Sprite as s
+    ]
+    Does [
+    ]
+}
+
 struct TestMove;
 impl<'a> System<'a> for TestMove {
     type SystemData = (

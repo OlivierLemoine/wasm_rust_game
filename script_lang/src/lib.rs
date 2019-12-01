@@ -10,6 +10,7 @@ macro_rules! lang {
     () => {};
 }
 
+#[macro_export]
 macro_rules! step {
     ($($rest:tt)*) => {
         stringify!($($rest)*);
@@ -17,6 +18,7 @@ macro_rules! step {
     };
 }
 
+#[macro_export]
 macro_rules! __get_line {
     ([] if ($($cond:tt)*) {$($actions:tt)*} else {$($actions2:tt)*} $($rest:tt)*) => {
         if __parse_action!($($cond)*).cast() {
