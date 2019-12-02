@@ -1,11 +1,9 @@
 mod draw;
 mod helper;
 
-use engine::specs::prelude::*;
-use engine::{builder::*, components::*, types::*};
+use engine::prelude::*;
 use helper::{body, request_animation_frame};
 use js_sys::*;
-// use log::*;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
@@ -386,4 +384,17 @@ fn create_block(world: &mut World, x: f64, y: f64, w: f64, h: f64) {
             h as usize,
         )]))
         .build();
+}
+
+logic! {
+    System TestSys
+    Uses [
+        Collisions as c,
+        Transform as t,
+        RigidBody as rb,
+        Player as p,
+        Sprite as s
+    ]
+    Does [
+    ]
 }

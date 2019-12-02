@@ -1,10 +1,21 @@
 mod camera;
 mod collider;
 mod event;
+mod macros;
 mod physics;
 mod render;
 mod transform;
 
+pub mod prelude {
+    pub use crate::builder::*;
+    pub use crate::components::*;
+    pub use crate::logic;
+    pub use crate::macros::*;
+    pub use crate::types::*;
+    pub use mashup::*;
+    pub use script_lang::*;
+    pub use specs::prelude::*;
+}
 pub mod types {
     pub use crate::collider::ColliderType;
 }
