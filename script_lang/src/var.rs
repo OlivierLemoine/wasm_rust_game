@@ -86,6 +86,11 @@ impl From<&Var__> for Var__ {
         v.clone()
     }
 }
+impl From<&()> for Var__ {
+    fn from(v: &()) -> Self {
+        Var__::Null
+    }
+}
 impl fmt::Display for Var__ {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let res = match self {
