@@ -33,6 +33,8 @@ macro_rules! logic {
     (
         System $struct_name:ident
         Uses [
+            $(unique $comp:ident as $var2:ident),*
+            ;
             $($component:ident as $var:ident),*
         ]
         Does [$($code:tt)*]
@@ -45,10 +47,14 @@ macro_rules! logic {
         struct $struct_name;
         impl<'a> System<'a> for $struct_name {
             type SystemData = (
+                $(Write<'a, $comp>,)*
                 $(WriteStorage<'a, $component>),*
             );
             m!{
                 fn run(&mut self, (
+                    $(
+                        mut $comp,
+                    )*
                     $(
                         mut "var_" $var
                     ),*

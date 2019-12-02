@@ -389,6 +389,7 @@ fn create_block(world: &mut World, x: f64, y: f64, w: f64, h: f64) {
 logic! {
     System TestSys
     Uses [
+        unique KeyPress as k;
         Collisions as c,
         Transform as t,
         RigidBody as rb,
@@ -396,8 +397,5 @@ logic! {
         Sprite as s
     ]
     Does [
-        a = 2;
-        b = 2;
-        c = a == b;
     ]
 }
