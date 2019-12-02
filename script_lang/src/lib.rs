@@ -75,6 +75,9 @@ macro_rules! __parse_action {
     ({$($key:tt: $value:tt),*}) => {
         Var__::Null$(.obj__(String::from(stringify!($key)), &__parse_action!($value)))*
     };
+    (ext $var:ident($($args:expr),*)) => {
+        Var__::from(&$var($($args),*))
+    };
     ($value:expr) => {
         Var__::from(&$value)
     };
@@ -92,6 +95,7 @@ fn test() {
 
         if (a == 2) {
             get a = 3;
+            ext test();
         } else {
             get a = 5;
         }
