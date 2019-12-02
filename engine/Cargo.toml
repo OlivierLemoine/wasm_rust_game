@@ -17,5 +17,5 @@ path = "../math"
 [dependencies.log]
 path = "../log"
 
-[dependencies.script_lang]
-path = "../script_lang"
+# [dependencies.script_lang]
+# path = "../script_lang"

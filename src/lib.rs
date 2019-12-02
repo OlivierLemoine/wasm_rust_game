@@ -385,16 +385,3 @@ fn create_block(world: &mut World, x: f64, y: f64, w: f64, h: f64) {
         )]))
         .build();
 }
-
-logic! {
-    System TestSys
-    Uses [
-        Collisions as c,
-        Transform as t,
-        RigidBody as rb,
-        Player as p,
-        Sprite as s
-    ]
-    Does [
-    ]
-}
