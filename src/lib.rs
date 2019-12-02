@@ -53,19 +53,6 @@ impl Component for Player {
     type Storage = DenseVecStorage<Self>;
 }
 
-logic! {
-    System TestSys
-    Uses [
-        static Collisions as c,
-        mut Transform as t,
-        mut RigidBody as rb,
-        mut Player as p,
-        mut Sprite as s
-    ]
-    Does [
-    ]
-}
-
 struct TestMove;
 impl<'a> System<'a> for TestMove {
     type SystemData = (
@@ -397,4 +384,17 @@ fn create_block(world: &mut World, x: f64, y: f64, w: f64, h: f64) {
             h as usize,
         )]))
         .build();
+}
+
+logic! {
+    System TestSys
+    Uses [
+        static Collisions as c,
+        mut Transform as t
+        // mut RigidBody as rb,
+        // mut Player as p,
+        // mut Sprite as s
+    ]
+    Does [
+    ]
 }

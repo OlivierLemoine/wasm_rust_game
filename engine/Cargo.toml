@@ -9,6 +9,7 @@ edition = "2018"
 [dependencies]
 specs = "0.15"
 lazy_static = "1.4"
+mashup = "0.1"
 
 [dependencies.math]
 path = "../math"

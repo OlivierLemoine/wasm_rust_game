@@ -1,5 +1,3 @@
-use script_lang::*;
-
 #[macro_export]
 macro_rules! object_builder {
     (
@@ -35,21 +33,35 @@ macro_rules! logic {
     (
         System $struct_name:ident
         Uses [
-            // $($mutability:ident $component:ident as $var:ident),*
-            $($component:ident as $var:ident),*
+            $($mutability:ident $component:ident as $var:ident),*
         ]
         Does [$($code:tt)*]
     ) => {
+        mashup! {
+            $(
+                m["var_" $var] = var_$var;
+            )*
+        }
         struct $struct_name;
         impl<'a> System<'a> for $struct_name {
             type SystemData = (
-                $(WriteStorage<'a, $component>,)*
+                $(__get_storage!($mutability $component))*
             );
-            fn run(&mut self, sys__: Self::SystemData) {
-                for (
-                    $($var,)*
-                ) in sys__.join() {
-                    lang!{$($code)*}
+            m!{
+                fn run(&mut self, (
+                    $(
+                        __get_name!($mutability "var_" $var)
+                    ),*
+                ): Self::SystemData) {
+                    for (
+                        $($var),*
+                    ) in (
+                        $(
+                            &__get_name!($mutability "var_" $var)
+                        ),*
+                    ).join() {
+                        lang!{$($code)*}
+                    }
                 }
             }
         }
