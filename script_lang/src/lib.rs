@@ -45,6 +45,9 @@ macro_rules! __get_line {
 
 #[macro_export]
 macro_rules! __parse_line {
+    (get $var:ident$(.$attr:ident)* = $($rest:tt)*) => {
+        $var$(.$attr)* = __parse_action!($($rest)*)
+    };
     (ext $var:ident$(.$attr:ident)* = $($rest:tt)*) => {
         $var$(.$attr)* = __parse_action!($($rest)*).cast()
     };
@@ -88,9 +91,9 @@ fn test() {
         a = 2;
 
         if (a == 2) {
-            ext a = 3;
+            get a = 3;
         } else {
-            ext a = 5;
+            get a = 5;
         }
     }
 }
