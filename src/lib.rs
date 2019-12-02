@@ -77,20 +77,31 @@ impl<'a> System<'a> for TestMove {
         )
             .join()
         {
-            let speed = if !kp.ShiftLeft() { 2.0 } else { 1.0 };
+            let c: &Collisions = c;
+            let t: &mut Transform = t;
+            let r: &mut RigidBody = r;
+            let p: &mut Player = p;
+            let s: &mut Sprite = s;
+
+            let speed = if !kp.ShiftLeft() { 3.0 } else { 1.0 };
             let mut new_player_state = p.state.clone();
+
+            r.velocity.x *= 0.9;
 
             match &mut p.state {
                 PlayerState::Idle | PlayerState::Walk => {
                     new_player_state = PlayerState::Idle;
+                    r.velocity.x *= 0.9;
                     if kp.KeyD() {
                         new_player_state = PlayerState::Walk;
-                        t.translate(engine::math::Vec2::from((speed, 0.0)));
+                        // t.translate(engine::math::Vec2::from((speed, 0.0)));
+                        r.velocity.x = speed;
                         t.face_right();
                     }
                     if kp.KeyA() {
                         new_player_state = PlayerState::Walk;
-                        t.translate(engine::math::Vec2::from((-speed, 0.0)));
+                        // t.translate(engine::math::Vec2::from((-speed, 0.0)));
+                        r.velocity.x = -speed;
                         t.face_left();
                     }
                     if kp.KeyW() {
@@ -107,11 +118,13 @@ impl<'a> System<'a> for TestMove {
                 }
                 PlayerState::Jump => {
                     if kp.KeyD() {
-                        t.translate(engine::math::Vec2::from((speed, 0.0)));
+                        // t.translate(engine::math::Vec2::from((speed, 0.0)));
+                        r.velocity.x = speed;
                         t.face_right();
                     }
                     if kp.KeyA() {
-                        t.translate(engine::math::Vec2::from((-speed, 0.0)));
+                        // t.translate(engine::math::Vec2::from((-speed, 0.0)));
+                        r.velocity.x = -speed;
                         t.face_left();
                     }
                     if kp.KeyK() {
@@ -124,11 +137,11 @@ impl<'a> System<'a> for TestMove {
                 PlayerState::Attack(remaning_time) => {
                     *remaning_time -= 1;
                     if kp.KeyD() {
-                        t.translate(engine::math::Vec2::from((speed, 0.0)));
+                        // t.translate(engine::math::Vec2::from((speed, 0.0)));
                         t.face_right();
                     }
                     if kp.KeyA() {
-                        t.translate(engine::math::Vec2::from((-speed, 0.0)));
+                        // t.translate(engine::math::Vec2::from((-speed, 0.0)));
                         t.face_left();
                     }
                     if *remaning_time < 0 {
