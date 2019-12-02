@@ -62,7 +62,7 @@ macro_rules! __parse_line {
 #[macro_export]
 macro_rules! __parse_action {
     ($var1:tt$(.$attr1:tt)* == $var2:tt$(.$attr2:tt)*) => {
-        __parse_action!($var1$(.$attr1)*) == __parse_action!($var2$(.$attr2)*)
+        Var__::from(&(__parse_action!($var1$(.$attr1)*) == __parse_action!($var2$(.$attr2)*)))
     };
     ([$($value:tt),*]) => {
         Var__::from(vec![
@@ -86,10 +86,11 @@ macro_rules! __parse_action {
 fn test() {
     lang! {
         a = 2;
-        b = true;
 
-        a = b == 2;
-
-        if (b) {} else {}
+        if (a == 2) {
+            ext a = 3;
+        } else {
+            ext a = 5;
+        }
     }
 }

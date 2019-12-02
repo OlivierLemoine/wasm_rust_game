@@ -159,6 +159,11 @@ impl Cast<String> for Var__ {
         }
     }
 }
+impl Cast<Var__> for Var__ {
+    fn cast(&self) -> Var__ {
+        self.clone()
+    }
+}
 impl PartialEq for Var__ {
     fn eq(&self, other: &Var__) -> bool {
         match (self, other) {
