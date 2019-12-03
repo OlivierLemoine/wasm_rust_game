@@ -26,4 +26,4 @@ macro_rules! generate_kp {
     };
 }
 
-generate_kp!(KeyA, KeyD, KeyW, ShiftLeft, KeyK);
+generate_kp!(KeyA, KeyD, KeyW, KeyK, ShiftLeft, ArrowLeft, ArrowRight, ArrowUp);

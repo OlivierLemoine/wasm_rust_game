@@ -45,8 +45,18 @@ impl PlayerState {
 }
 
 #[derive(Default)]
+struct Player1;
+impl Component for Player1 {
+    type Storage = FlaggedStorage<Self>;
+}
+#[derive(Default)]
+struct Player2;
+impl Component for Player2 {
+    type Storage = FlaggedStorage<Self>;
+}
+
+#[derive(Default)]
 struct Player {
-    // has_jump: bool,
     state: PlayerState,
 }
 impl Component for Player {
@@ -62,18 +72,20 @@ impl<'a> System<'a> for TestMove {
         WriteStorage<'a, RigidBody>,
         WriteStorage<'a, Player>,
         WriteStorage<'a, Sprite>,
+        ReadStorage<'a, Player1>,
     );
 
     fn run(
         &mut self,
-        (kp, collisions, mut transforms, mut rigidbodies, mut players, mut sprites): Self::SystemData,
+        (kp, collisions, mut transforms, mut rigidbodies, mut players, mut sprites, p1): Self::SystemData,
     ) {
-        for (c, t, r, p, s) in (
+        for (c, t, r, p, s, _) in (
             &collisions,
             &mut transforms,
             &mut rigidbodies,
             &mut players,
             &mut sprites,
+            &p1,
         )
             .join()
         {
@@ -83,7 +95,12 @@ impl<'a> System<'a> for TestMove {
             let p: &mut Player = p;
             let s: &mut Sprite = s;
 
-            let speed = if !kp.ShiftLeft() { 3.0 } else { 1.0 };
+            let speed = if !kp.ShiftLeft() {
+                3.0
+            } else {
+                r.velocity.x *= 0.8;
+                1.0
+            };
             let mut new_player_state = p.state.clone();
 
             r.velocity.x *= 0.9;
@@ -161,6 +178,115 @@ impl<'a> System<'a> for TestMove {
         }
     }
 }
+struct TestMove2;
+impl<'a> System<'a> for TestMove2 {
+    type SystemData = (
+        Read<'a, engine::KeyPress>,
+        ReadStorage<'a, Collisions>,
+        WriteStorage<'a, Transform>,
+        WriteStorage<'a, RigidBody>,
+        WriteStorage<'a, Player>,
+        WriteStorage<'a, Sprite>,
+        ReadStorage<'a, Player2>,
+    );
+
+    fn run(
+        &mut self,
+        (kp, collisions, mut transforms, mut rigidbodies, mut players, mut sprites, p2): Self::SystemData,
+    ) {
+        for (c, t, r, p, s, _) in (
+            &collisions,
+            &mut transforms,
+            &mut rigidbodies,
+            &mut players,
+            &mut sprites,
+            &p2,
+        )
+            .join()
+        {
+            let c: &Collisions = c;
+            let t: &mut Transform = t;
+            let r: &mut RigidBody = r;
+            let p: &mut Player = p;
+            let s: &mut Sprite = s;
+
+            let speed = if !kp.ShiftLeft() {
+                3.0
+            } else {
+                r.velocity.x *= 0.8;
+                1.0
+            };
+            let mut new_player_state = p.state.clone();
+
+            r.velocity.x *= 0.9;
+
+            match &mut p.state {
+                PlayerState::Idle | PlayerState::Walk => {
+                    new_player_state = PlayerState::Idle;
+                    r.velocity.x *= 0.9;
+                    if kp.ArrowRight() {
+                        new_player_state = PlayerState::Walk;
+                        // t.translate(engine::math::Vec2::from((speed, 0.0)));
+                        r.velocity.x = speed;
+                        t.face_right();
+                    }
+                    if kp.ArrowLeft() {
+                        new_player_state = PlayerState::Walk;
+                        // t.translate(engine::math::Vec2::from((-speed, 0.0)));
+                        r.velocity.x = -speed;
+                        t.face_left();
+                    }
+                    if kp.ArrowUp() {
+                        new_player_state = PlayerState::Jump;
+                        r.impulse(engine::math::Vec2::from((0.0, 50.0)));
+                    }
+
+                    if !c.has_hit_bottom() {
+                        new_player_state = PlayerState::Jump;
+                    }
+                }
+                PlayerState::Jump => {
+                    if kp.ArrowRight() {
+                        // t.translate(engine::math::Vec2::from((speed, 0.0)));
+                        r.velocity.x = speed;
+                        t.face_right();
+                    }
+                    if kp.ArrowLeft() {
+                        // t.translate(engine::math::Vec2::from((-speed, 0.0)));
+                        r.velocity.x = -speed;
+                        t.face_left();
+                    }
+                    if c.has_hit_bottom() {
+                        new_player_state = PlayerState::Idle;
+                    }
+                }
+                PlayerState::Attack(remaning_time) => {
+                    *remaning_time -= 1;
+                    if kp.KeyD() {
+                        // t.translate(engine::math::Vec2::from((speed, 0.0)));
+                        t.face_right();
+                    }
+                    if kp.KeyA() {
+                        // t.translate(engine::math::Vec2::from((-speed, 0.0)));
+                        t.face_left();
+                    }
+                    if *remaning_time < 0 {
+                        if c.has_hit_bottom() {
+                            new_player_state = PlayerState::Idle;
+                        } else {
+                            new_player_state = PlayerState::Jump;
+                        }
+                    }
+                }
+            };
+
+            if new_player_state != p.state {
+                s.animation(new_player_state.to_string());
+                p.state = new_player_state;
+            }
+        }
+    }
+}
 
 #[wasm_bindgen]
 pub fn resize() -> Result<(), JsValue> {
@@ -176,12 +302,16 @@ pub fn start(player_image: ImageData) -> Result<(), JsValue> {
     );
     let mut game = engine::Game::new();
     game.world.register::<Player>();
+    game.world.register::<Player1>();
+    game.world.register::<Player2>();
     init(&mut game.world, player_image);
 
     let closure = Rc::new(RefCell::new(None));
     let imediate_closure = closure.clone();
     let mut mover = TestMove;
     engine::specs::shred::RunNow::setup(&mut mover, &mut game.world);
+    let mut mover2 = TestMove2;
+    engine::specs::shred::RunNow::setup(&mut mover2, &mut game.world);
     let mut renderer = draw::SysRender;
     engine::specs::shred::RunNow::setup(&mut renderer, &mut game.world);
     let mut deb = draw::DebugCollider;
@@ -215,6 +345,7 @@ pub fn start(player_image: ImageData) -> Result<(), JsValue> {
     *imediate_closure.borrow_mut() = Some(Closure::wrap(Box::new(move || {
         let mut g = game.borrow_mut();
         mover.run_now(&mut g.world);
+        mover2.run_now(&mut g.world);
         g.run_sys();
         renderer.run_now(&mut g.world);
         // deb.run_now(&mut g.world);
@@ -299,6 +430,7 @@ fn init(world: &mut World, player_image: engine::Image) {
                 .build(),
         )
         .with(Player::default())
+        .with(Player1)
         .build();
     world
         .create_entity()
@@ -359,6 +491,8 @@ fn init(world: &mut World, player_image: engine::Image) {
                 )
                 .build(),
         )
+        .with(Player::default())
+        .with(Player2)
         .build();
 }
 
